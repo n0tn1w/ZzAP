@@ -7,7 +7,7 @@ import CrownIcon from "react-native-vector-icons/MaterialCommunityIcons";
 import { Image } from "react-native";
 import { styles } from "./Styles";
 import { Scroll } from "@tamagui/lucide-icons";
-import { ScrollView } from "react-native-gesture-handler";
+import { FlatList, ScrollView } from "react-native-gesture-handler";
 
 export default function Leaderboard() {
   const { colors } = useTheme();
@@ -17,7 +17,7 @@ export default function Leaderboard() {
     numberOfItemsPerPageList[0]
   );
 
-  const [items] = React.useState([
+  const [usersRanked] = React.useState([
     {
       key: 1,
       name: "John",
@@ -129,7 +129,7 @@ export default function Leaderboard() {
   ]);
 
   const from = 3;
-  const to = items.length;
+  const to = usersRanked.length;
 
   React.useEffect(() => {
     setPage(0);
@@ -137,10 +137,21 @@ export default function Leaderboard() {
 
   const styleSheet = styles(colors);
 
+  const Item = ({ item, index }: any) => (
+    <View style={styleSheet.row}>
+      <Text>{index}</Text>
+      <Text>{item.name}</Text>
+      <Avatar.Text size={64} label={item.name} />
+      <Text>{item.score}</Text>
+    </View>
+  );
+
+  const top3 = [usersRanked[1], usersRanked[0], usersRanked[2]];
+
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <View style={styleSheet.top3Container}>
-        <View
+        {/* <View
           onTouchStart={() => console.log("touch 2nd")}
           style={{
             ...styleSheet.placesContainer,
@@ -153,13 +164,13 @@ export default function Leaderboard() {
             style={styleSheet.medalionImage}
           />
           <Avatar.Text size={64} label="2" style={styleSheet.avatarContainer} />
-          {items[1] == null ? (
+          {usersRanked[1] == null ? (
             <Text>No Data</Text>
           ) : (
-            <Text>{items[1].name}</Text>
+            <Text>{usersRanked[1].name}</Text>
           )}
-        </View>
-        <View
+        </View> */}
+        {/* <View
           onTouchStart={() => console.log("touch 1st")}
           style={{ ...styleSheet.placesContainer, paddingBottom: 20 }}
         >
@@ -168,13 +179,13 @@ export default function Leaderboard() {
             style={styleSheet.medalionImage}
           />
           <Avatar.Text size={76} label="1" style={styleSheet.avatarContainer} />
-          {items[0] == null ? (
+          {usersRanked[0] == null ? (
             <Text>No Data</Text>
           ) : (
-            <Text>{items[0].name}</Text>
+            <Text>{usersRanked[0].name}</Text>
           )}
-        </View>
-        <View
+        </View> */}
+        {/* <View
           onTouchStart={() => console.log("touch 3rd")}
           style={{
             ...styleSheet.placesContainer,
@@ -187,49 +198,61 @@ export default function Leaderboard() {
             style={styleSheet.medalionImage}
           />
           <Avatar.Text size={64} label="3" style={styleSheet.avatarContainer} />
-          {items[2] == null ? (
+          {usersRanked[2] == null ? (
             <Text>No Data</Text>
           ) : (
-            <Text>{items[2].name}</Text>
+            <Text>{usersRanked[2].name}</Text>
           )}
-        </View>
+        </View> */}
+
+        {top3.map((user, index) => (
+          <View
+            key={user.key}
+            onTouchStart={() => console.log(`touch ${index + 1}st`)}
+            style={{
+              ...styleSheet.placesContainer,
+              paddingTop: 50,
+              paddingRight: index === 0 ? 20 : index === 2 ? 20 : 0,
+              paddingLeft: index === 0 ? 20 : index === 2 ? 20 : 0,
+            }}
+          >
+            <Image
+              source={
+                index === 0
+                  ? require("../../assets/secondPlaceLeaderBoard.png")
+                  : index === 1
+                    ? require("../../assets/firstPlaceLeaderboard.png")
+                    : require("../../assets/thirdPlaceLeaderBoard.png")
+              }
+              style={styleSheet.medalionImage}
+            />
+            <Avatar.Text
+              size={index === 1 ? 90 : 50}
+              label={user.name}
+              style={
+                index === 1
+                  ? {
+                      ...styleSheet.firstPalceStyle,
+                      ...styleSheet.generalTop3UserStyle,
+                    }
+                  : styleSheet.generalTop3UserStyle
+              }
+            />
+            <Text>{user.name}</Text>
+          </View>
+        ))}
       </View>
-      <View>
-        {items.length < 3 ? (
+      {/* <View>
+        {usersRanked.length < 3 ? (
           <Text>No table</Text>
         ) : (
-          <DataTable>
-            <DataTable.Header>
-              <DataTable.Title>Username</DataTable.Title>
-              <DataTable.Title numeric>Score</DataTable.Title>
-              <DataTable.Title numeric>Division</DataTable.Title>
-            </DataTable.Header>
-
-            {items.slice(from, to).map((item) => (
-              <DataTable.Row
-                onPress={() => console.log(item.name)}
-                key={item.key}
-              >
-                <DataTable.Cell>{item.name}</DataTable.Cell>
-                <DataTable.Cell numeric>{item.time}</DataTable.Cell>
-                <DataTable.Cell numeric>{item.score}</DataTable.Cell>
-              </DataTable.Row>
-            ))}
-
-            {/* <DataTable.Pagination
-          page={page}
-          numberOfPages={Math.ceil(items.length / itemsPerPage)}
-          onPageChange={(page) => setPage(page)}
-          label={`${from + 1}-${to} of ${items.length}`}
-          numberOfItemsPerPageList={numberOfItemsPerPageList}
-          numberOfItemsPerPage={itemsPerPage}
-          onItemsPerPageChange={onItemsPerPageChange}
-          showFastPaginationControls
-          selectPageDropdownLabel={"Rows per page"}
-        /> */}
-          </DataTable>
+          <FlatList
+            data={usersRanked}
+            renderItem={(props) => <Item props={props} />}
+            keyExtractor={(item) => `${item.key}`}
+          />
         )}
-      </View>
+      </View> */}
     </View>
   );
 }

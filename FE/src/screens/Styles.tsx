@@ -22,9 +22,13 @@ export const styles = (colors: MD3Colors) =>
       padding: 10,
       gap: 4.5,
     },
-    avatarContainer: {
-      borderWidth: 2,
+    generalTop3UserStyle: {
+      borderWidth: 3,
+      padding: 2,
       borderColor: "yellow",
       borderRadius: 50,
     },
+    firstPalceStyle: {},
+
+    row: {},
   });
