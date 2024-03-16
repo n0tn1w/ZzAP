@@ -1,4 +1,3 @@
-
 import { View, Image } from "react-native";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Text, useTheme } from "react-native-paper";
@@ -110,6 +109,9 @@ export default function Leaderboard() {
 
   return (
     <View style={styleSheet.view}>
+      <View style={styleSheet.header}>
+        <Text style={styleSheet.title}>Leaderboard</Text>
+      </View>
       <View style={styleSheet.top3Section}>
         {top3.map((user, index) => (
           <View

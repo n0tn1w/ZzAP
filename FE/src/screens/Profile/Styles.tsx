@@ -9,7 +9,7 @@ export const styles = (colors: MD3Colors) =>
       backgroundColor: colors.background,
     },
     header: {
-      paddingTop: 50,
+      paddingTop: 80,
       paddingLeft: 20,
       paddingBottom: 20,
     },
