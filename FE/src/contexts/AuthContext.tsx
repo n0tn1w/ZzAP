@@ -1,20 +1,23 @@
-import React, { useState } from "react";
+import { jwtDecode } from "jwt-decode";
+import React, { useEffect, useState } from "react";
+import { getToken, saveToken } from "../utils/secureStore";
 
 export type User = {
   username: string;
 };
 
-type AuthContext = {
+type AuthContextProps = {
   isAuth: boolean;
+  token: string | null;
   user: User | null;
   login: (username: string) => void;
   logout: () => void;
 };
 
-const AuhtContext = React.createContext<AuthContext | null>(null);
+const AuthContext = React.createContext<AuthContextProps | null>(null);
 
 export const useAuth = () => {
-  const authContext = React.useContext(AuhtContext);
+  const authContext = React.useContext(AuthContext);
 
   if (!authContext) {
     throw new Error("useAuth has to be used within <AuthProvider>");
@@ -26,9 +29,13 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAuth, setIsAuth] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
 
-  const login = (username: string) => {
+  const login = (token: string) => {
     setIsAuth(true);
+    const username = jwtDecode(token).sub!;
+    setToken(token);
+    saveToken(token);
     setUser({ username });
   };
 
@@ -37,16 +44,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setUser(null);
   };
 
+  useEffect(() => {
+    const checkToken = async () => {
+      const token = await getToken();
+      if (token.success) login(token.value!);
+    };
+    checkToken();
+  }, []);
+
   return (
-    <AuhtContext.Provider
+    <AuthContext.Provider
       value={{
         isAuth,
         user,
+        token,
         login,
         logout,
       }}
     >
       {children}
-    </AuhtContext.Provider>
+    </AuthContext.Provider>
   );
 };

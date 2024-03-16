@@ -5,6 +5,16 @@ import * as SplashScreen from "expo-splash-screen";
 import { ColorsSchemeProvider } from "./src/themes/ThemeProvider";
 import { AuthProvider } from "./src/contexts/AuthContext";
 
+import { decode, encode } from "base-64";
+
+if (!global.btoa) {
+  global.btoa = encode;
+}
+
+if (!global.atob) {
+  global.atob = decode;
+}
+
 SplashScreen.preventAutoHideAsync();
 
 export default function App() {
