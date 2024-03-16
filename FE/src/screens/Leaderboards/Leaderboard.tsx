@@ -1,8 +1,7 @@
 import React from "react";
 import { Text, useTheme } from "react-native-paper";
-import { View } from "react-native";
+import { View, Image } from "react-native";
 import { Avatar } from "react-native-paper";
-import { Image } from "react-native";
 import { styles } from "./Styles";
 import {
   FlatList,
@@ -151,20 +150,20 @@ export default function Leaderboard() {
 
   const top3 = [usersRanked[1], usersRanked[0], usersRanked[2]];
   const profilePics = [
-    require("../../assets/avatars/person1.png"),
-    require("../../assets/avatars/person2.png"),
-    require("../../assets/avatars/person3.png"),
-    require("../../assets/avatars/person4.png"),
+    require("../../../assets/avatars/person1.png"),
+    require("../../../assets/avatars/person2.png"),
+    require("../../../assets/avatars/person3.png"),
+    require("../../../assets/avatars/person4.png"),
   ];
 
   const getImage = () => profilePics[Math.floor(Math.random() * (3 - 0) + 0)];
 
   const getAwardImage = (index: number) =>
     index === 0
-      ? require("../../assets/secondPlaceLeaderBoard.png")
+      ? require("../../../assets/secondPlaceLeaderBoard.png")
       : index === 1
-        ? require("../../assets/firstPlaceLeaderboard.png")
-        : require("../../assets/thirdPlaceLeaderBoard.png");
+        ? require("../../../assets/firstPlaceLeaderboard.png")
+        : require("../../../assets/thirdPlaceLeaderBoard.png");
 
   const getAwardImageStyle = (index: number) =>
     index === 1

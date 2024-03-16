@@ -22,7 +22,10 @@ export const styles = (colors: MD3Colors) =>
       borderBottomRightRadius: 25,
       paddingVertical: 20,
       gap: 30,
+      borderBottomWidth: 2,
+      borderBottomColor: colors.primary,
     },
+
     firstPlace: {
       paddingBottom: 10,
     },
@@ -73,17 +76,15 @@ export const styles = (colors: MD3Colors) =>
     avatar: {
       backgroundColor: "transparent",
     },
-    profile: {
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 10,
-    },
-    pointsRank: {
-      flexDirection: "row",
-      gap: 5,
-      alignItems: "center",
-      justifyContent: "center",
+
+    header: {
+      paddingTop: 50,
       paddingLeft: 20,
+      paddingBottom: 20,
+    },
+
+    title: {
+      fontSize: 30,
+      color: "white",
     },
   });
