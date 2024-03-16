@@ -1,10 +1,11 @@
-import { Text, useTheme, Avatar } from "react-native-paper";
+import { Text, useTheme, Avatar, Button } from "react-native-paper";
 import { styles } from "./Styles";
 import { View, Image } from "react-native";
 import images from "../../../assets";
 import React, { useEffect, useState } from "react";
 import useAxios from "../../utils/useAxios";
 import Loading from "../../components/Loading";
+import { useAuth } from "../../contexts/AuthContext";
 
 interface Profile {
   id: string;
@@ -20,7 +21,7 @@ export default function Profile() {
   const [profile, setProfile] = useState<Profile | null>(null);
 
   const axios = useAxios(true);
-
+  const { logout } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
     const fetchMe = async () => {
@@ -59,13 +60,13 @@ export default function Profile() {
   const rankPath = (() => {
     switch (profile.division) {
       case "bronze":
-        return "../../../assets/division-bronze.png";
+        return require("../../../assets/division-bronze.png");
       case "silver":
-        return "../../../assets/division-silver.png";
+        return require("../../../assets/division-silver.png");
       case "gold":
-        return "../../../assets/division-gold.png";
+        return require("../../../assets/division-gold.png");
       default:
-        return "../../../assets/division-bronze.png";
+        return require("../../../assets/division-bronze.png");
     }
   })();
 
@@ -77,7 +78,7 @@ export default function Profile() {
       <View style={styleSheet.content}>
         <View style={styleSheet.profileCard}>
           <Avatar.Image
-            source={require(rankPath)}
+            source={require("../../../assets/avatars/person1.png")}
             size={100}
             style={styleSheet.avatar}
           />
@@ -87,13 +88,10 @@ export default function Profile() {
             <Text style={{ paddingRight: 5 }}>{profile.score} pts</Text>
           </View>
 
-          <Image
-            source={images[profile.division]}
-            style={styleSheet.divisionImage}
-          />
+          <Image source={rankPath} style={styleSheet.divisionImage} />
         </View>
 
-        <View style={styleSheet.lastPlayedContent}>
+        {/* <View style={styleSheet.lastPlayedContent}>
           <Text style={styleSheet.lastPlayedTitle}>Last played challenges</Text>
           <View style={styleSheet.lastPlayedItem}>
             <Text style={styleSheet.lastPlayedLabel}>Challenge 1</Text>
@@ -107,7 +105,17 @@ export default function Profile() {
             <Text style={styleSheet.lastPlayedLabel}>Challenge 3</Text>
             <Text style={styleSheet.lastPlayedPoints}>100</Text>
           </View>
-        </View>
+        </View> */}
+
+        <Button
+          mode="outlined"
+          onPress={logout}
+          style={{
+            marginTop: 20,
+          }}
+        >
+          <Text>Sign out</Text>
+        </Button>
       </View>
     </View>
   );
