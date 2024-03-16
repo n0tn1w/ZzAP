@@ -31,7 +31,24 @@ public class Level {
     public Level() {
 
     }
-//
+
+    public Level(LevelType levelType, Integer number, Integer points, Integer nodesCount, Integer edgesCount, List<String> edges) {
+        this.number = number;
+        this.points = points;
+        this.levelType = levelType;
+        this.nodesCount = nodesCount;
+        this.edgesCount = edgesCount;
+        this.edges = edges;
+    }
+
+    public Level(LevelType levelType, Integer number, Integer points, List<String> edges) {
+        this.number = number;
+        this.points = points;
+        this.levelType = levelType;
+        this.edges = edges;
+    }
+
+    //
 //    public LevelType getLevelType() {
 //        return levelType;
 //    }
