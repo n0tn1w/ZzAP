@@ -245,11 +245,11 @@ export default function Connect() {
                 console.log('Connection established');
                 //sendMessageValue("{command:\"hamilton\"}");
                 sendMessageValue("hamilton");
-                sendMessageValue("{\"inz\":5}");
+                //sendMessageValue("{\"inz\":5}");
 
                 //sendMessageValue("{command:\"startAc\"}");
 
-                const numArr = new ActiveNodes([4, 16, 17, 5, 18, 19, 21]);
+                const numArr = new ActiveNodes([4]);
                 //sendMessageValue("{command:\"stopAc\"}");
                 sendObjectValue(JSON.stringify(numArr));
             });
@@ -311,7 +311,7 @@ export default function Connect() {
                 </View>
             )
             }
-            <Text>{message}</Text>
+            <Text style={{ color: colors.onBackground }}>{message}</Text>
         </View >
     )
 }

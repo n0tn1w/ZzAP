@@ -1,6 +1,6 @@
 import { createStackNavigator } from "@react-navigation/stack";
-import Levels from "../Levels";
-import Connect from "../Connect";
+import Levels from "./Levels";
+import Connect from "./Connect";
 
 const PublicStack = createStackNavigator();
 
