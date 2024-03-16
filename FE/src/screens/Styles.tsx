@@ -7,6 +7,7 @@ export const styles = (colors: MD3Colors) =>
     view: {
       flex: 1,
       backgroundColor: colors.background,
+      paddingTop: 20,
     },
     medalionImage: {
       width: 40,

@@ -89,6 +89,7 @@ export default function AuthNavigationStack() {
         // @ts-ignore
         options={{
           title: "Leaderboard",
+          headerShown: false,
           tabBarIcon: ({ color }) => (
             <LeaderboardIcon name="leaderboard" color={color} size={23} />
           ),

@@ -142,7 +142,7 @@ export default function Leaderboard() {
 
   const Item = ({ item, index }: any) => (
     <View style={[styleSheet.row, index === 4 ? styleSheet.myRank : null]}>
-      <Text style={styleSheet.rankNumber}>{index}</Text>
+      <Text style={styleSheet.rankNumber}>{index + 4}</Text>
       <Avatar.Image size={40} source={getImage()} style={styleSheet.avatar} />
       <Text style={styleSheet.name}>{item.name}</Text>
       <Text>{item.score}</Text>
