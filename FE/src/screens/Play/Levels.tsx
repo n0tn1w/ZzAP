@@ -1,12 +1,12 @@
 import { StackScreenProps } from "@react-navigation/stack";
-import { Text } from "react-native-paper";
-import { useTheme, Button } from 'react-native-paper';
+import { Icon, PaperProvider, Portal, Text, Modal } from "react-native-paper";
+import { useTheme, Button } from "react-native-paper";
 import { FlatList, View } from "react-native";
-import { SetStateAction, useState } from "react";
 import { styles } from "./Styles";
 import { Image } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import React from "react";
+import TrophyIcon from "react-native-vector-icons/MaterialCommunityIcons";
 
 interface Level {
   id: number;
@@ -67,7 +67,9 @@ export default function Levels({ navigation }: StackScreenProps<any>) {
           </View>
         </View>
         <View style={styleSheet.buttonsView}>
-          <Text style={{ fontSize: 20 }}>{title}</Text>
+          <Text style={{ fontSize: 20, paddingBottom: 10, paddingTop: 5 }}>
+            {title}
+          </Text>
           <Button
             icon={"play"}
             style={{ width: 200, marginBottom: 10 }}
@@ -78,19 +80,17 @@ export default function Levels({ navigation }: StackScreenProps<any>) {
           </Button>
           <View style={styleSheet.lowerButtonsView}>
             <Button
-              style={{ width: 10 }}
-              icon="trophy"
               mode="outlined"
               onPress={() => console.log(`Pressed ${id}`)}
-              children={undefined}
-            ></Button>
+            >
+              <TrophyIcon size={20} name="trophy" />
+            </Button>
             <Button
-              style={{ width: 10 }}
-              icon={"information"}
               mode="outlined"
-              onPress={() => console.log(`Pressed ${id}`)}
-              children={undefined}
-            ></Button>
+              onPress={() => navigation.navigate("level1information")}
+            >
+              <TrophyIcon size={20} name="information" />
+            </Button>
           </View>
         </View>
       </View>
@@ -99,16 +99,20 @@ export default function Levels({ navigation }: StackScreenProps<any>) {
 
   return (
     <View style={styleSheet.mainView}>
+      <View style={styleSheet.header}>
+        <Text style={styleSheet.title}>Levels</Text>
+      </View>
       <View style={styleSheet.levelsView}>
         <GestureHandlerRootView>
           <FlatList
             contentContainerStyle={{ gap: 10 }}
-            style={styleSheet.flatList}
+            // style={styleSheet.flatList}
             data={levels}
             renderItem={({ item, index }) => (
               <Level id={index + 1} title={item.title} />
             )}
             keyExtractor={(item) => `${item.id - 1}`}
+            ItemSeparatorComponent={() => <View style={{ height: 20 }} />}
           />
         </GestureHandlerRootView>
       </View>

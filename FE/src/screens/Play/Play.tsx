@@ -6,7 +6,11 @@ import { useTheme } from "react-native-paper";
 import { styles } from "./Styles";
 import LevelDescription from "./LevelDescription";
 
-type PublicStackProps = { levels: undefined, connect: undefined, description: { level: Level | undefined } }
+type PublicStackProps = {
+  levels: undefined;
+  connect: undefined;
+  description: { level: Level | undefined };
+};
 
 const PublicStack = createStackNavigator();
 
@@ -17,7 +21,7 @@ export default function NavigationStack() {
   return (
     <PublicStack.Navigator
       screenOptions={{
-        headerShown: true,
+        headerShown: false,
         headerTitleAlign: "left",
         headerTintColor: colors.onSurface,
         headerStyle: {
@@ -30,7 +34,10 @@ export default function NavigationStack() {
       <PublicStack.Screen name="Levels" component={Levels} />
       <PublicStack.Screen name="connect" component={Connect} />
       <PublicStack.Screen name="description" component={LevelDescription} />
-
+      <PublicStack.Screen
+        name="level1information"
+        component={LevelDescription}
+      />
     </PublicStack.Navigator>
   );
 }

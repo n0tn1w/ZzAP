@@ -2,6 +2,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 import WelcomeScreen from "../screens/public/WelcomeScreen";
 import Login from "../screens/public/Login";
 import Register from "../screens/public/Register";
+import LevelDescription from "../screens/Play/LevelDescription";
 
 const PublicStack = createStackNavigator();
 
