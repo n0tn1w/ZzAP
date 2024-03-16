@@ -4,7 +4,6 @@ public class LevelAttemptDTO {
     private Long time; // Time taken to complete the level in milliseconds
     private Boolean passed; // Whether the level was passed
 
-    // Constructors, getters, and setters
 
 
     public LevelAttemptDTO() {
