@@ -1,10 +1,12 @@
 import { NavigationContainer } from "@react-navigation/native";
-import AuthNavigationStack from "./AuthNavigationStack";
+import AuthNavigation from "./AuthNavigation";
+import NavigationStack from "./NavigationStack";
 
 export default function index() {
-    return (
-        <NavigationContainer>
-            <AuthNavigationStack />
-        </NavigationContainer>
-    )
+  return (
+    <NavigationContainer>
+      <AuthNavigation />
+      {/* <NavigationStack /> */}
+    </NavigationContainer>
+  );
 }

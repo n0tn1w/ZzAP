@@ -1,8 +1,5 @@
-import React from 'react'
-import { Text } from 'tamagui'
+import { Text } from "react-native-paper";
 
 export default function Home() {
-  return (
-    <Text>Home</Text>
-  )
+  return <Text>Home</Text>;
 }
