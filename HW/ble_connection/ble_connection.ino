@@ -2,6 +2,27 @@
 #include <BLEDevice.h>
 #include <BLEServer.h>
 #include <BLEUtils.h>
+#include <ArduinoJson.h>
+
+
+namespace Const {
+  const std::string hamilton = "hamilton";
+  const std::string game2 = "game2";
+  const std::string idle = "idle";
+};
+struct Graph {
+    int edgesCount;
+    std::vector<std::pair<int, int>> edges;
+    int nodesCount;
+    std::vector<int> nodesResult;
+};
+
+// Global flags
+namespace Global {
+   std::string command; 
+   Graph graph;
+}
+
 
 // BLE SECTION
 BLEServer *pServer = NULL;
@@ -37,13 +58,49 @@ class CharacteristicsCallbacks : public BLECharacteristicCallbacks
   {
     Serial.print("Value Written ");
     Serial.println(pCharacteristic->getValue().c_str());
+    std::string valueWritten = pCharacteristic->getValue().c_str();
 
-    if (pCharacteristic == box_characteristic)
-    {
-      boxValue = pCharacteristic->getValue().c_str();
-      box_characteristic->setValue(const_cast<char *>(boxValue.c_str()));
-      box_characteristic->notify();
+    if(valueWritten == Const::hamilton) {
+      Global::command = Const::hamilton;
+      Serial.print("You are playing hamilton!");
+    } else if(valueWritten == Const::game2) {
+      Global::command = Const::game2;
+    } else {
+      if(Global::command == Const::hamilton) {
+        Serial.print("Init hamilton!");
+        InitHamilton(valueWritten);
+        Serial.print("Send acknowledge to FE");
+        
+      } else if(Global::command == Const::game2) {
+        
+      }
     }
+  }
+
+  void InitHamilton(std::string inputString) {
+    DynamicJsonDocument doc(1024); // Adjust capacity as needed
+    DeserializationError error = deserializeJson(doc, inputString);
+    if (error) {
+        Serial.print("InitHamilton deserializeJson() failed: ");
+        Serial.println(error.c_str());
+        return;
+    }
+
+    Global::graph;
+    Global::graph.edgesCount = doc["edgesCount"];
+    JsonArray dataEdgesArray = doc["edges"];
+    for (JsonVariant value : dataEdgesArray) {
+        int node1 = value[0];
+        int node2 = value[1];
+        Global::graph.edges.push_back({node1, node2});
+    }
+    Global::graph.nodesCount = doc["nodesCount"];
+    JsonArray dataNodeResultArray = doc["nodeResult"];
+    for (JsonVariant value : dataNodeResultArray) {
+        int node1 = value[0];
+        Global::graph.nodesResult.push_back(node1);
+    }
+
   }
 };
 
@@ -51,8 +108,15 @@ void setup()
 {
   Serial.begin(115200);
 
+    // Initialize BLE
+  BLEDevice::init("ESP32");
+
+  // Get the Bluetooth MAC address
+  uint8_t address[6];
+  BLEAddress bleAddress = BLEDevice::getAddress();
+  Serial.println(bleAddress.toString().c_str());
+
   // Create the BLE Device
-  BLEDevice::init("BLEExample");
   // Create the BLE Server
   pServer = BLEDevice::createServer();
   pServer->setCallbacks(new MyServerCallbacks());
