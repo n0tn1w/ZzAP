@@ -69,21 +69,24 @@ export default function Levels({ navigation }: StackScreenProps<any>) {
         <View style={styleSheet.buttonsView}>
           <Text style={{ fontSize: 20 }}>{title}</Text>
           <Button
+            icon={"play"}
             style={{ width: 200, marginBottom: 10 }}
             mode="contained"
-            onPress={() => console.log(`Pressed ${id}`)}
+            onPress={() => navigation.navigate("connect")}
           >
             Play
           </Button>
           <View style={styleSheet.lowerButtonsView}>
             <Button
               //style={{ width: 140 }}
+              icon="trophy"
               mode="outlined"
               onPress={() => console.log(`Pressed ${id}`)}
             >
               Rankings
             </Button>
             <Button
+              icon={"information"}
               mode="outlined"
               onPress={() => console.log(`Pressed ${id}`)}
             >
