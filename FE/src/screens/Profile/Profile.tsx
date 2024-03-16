@@ -2,7 +2,7 @@ import { Text, useTheme, Avatar } from "react-native-paper";
 import { styles } from "./Styles";
 import { View, Image } from "react-native";
 import images from "../../../assets";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import useAxios from "../../utils/useAxios";
 import Loading from "../../components/Loading";
 
@@ -28,7 +28,6 @@ export default function Profile() {
       try {
         const res = await axios.get<Profile>("/me");
         setProfile(res.data);
-        console.log(profile);
       } catch (error) {
         // TODO
         console.log(error);
