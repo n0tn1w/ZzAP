@@ -27,6 +27,7 @@ public class LevelAttemptDTO {
         return passed;
     }
 
+
     public void setPassed(Boolean passed) {
         this.passed = passed;
     }
