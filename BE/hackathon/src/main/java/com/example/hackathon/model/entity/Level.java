@@ -3,6 +3,8 @@ package com.example.hackathon.model.entity;
 import com.example.hackathon.model.enums.LevelType;
 import jakarta.persistence.*;
 
+import java.util.List;
+
 @Entity
 public class Level {
     @Id
@@ -10,15 +12,19 @@ public class Level {
     private Long id;
     private Integer number;
     private Integer points;
-    private String inoFilePath;
     @Enumerated(EnumType.STRING)
     private LevelType levelType;
 
-    public Level(Long id, Integer number, Integer points, String inoFile, LevelType levelType) {
+    private Integer nodesCount;
+    private Integer edgesCount;
+
+    @ElementCollection
+    private List<String> edges;
+
+    public Level(Long id, Integer number, Integer points, LevelType levelType) {
         this.id = id;
         this.number = number;
         this.points = points;
-        this.inoFilePath = inoFile;
         this.levelType = levelType;
     }
 
@@ -34,17 +40,15 @@ public class Level {
 //        this.levelType = levelType;
 //    }
 
-    public Level(Integer number, Integer points, String inoFile) {
+    public Level(Integer number, Integer points) {
         this.number = number;
         this.points = points;
-        this.inoFilePath = inoFile;
     }
 
-    public Level(Long id, Integer number, Integer points, String inoFile) {
+    public Level(Long id, Integer number, Integer points) {
         this.id = id;
         this.number = number;
         this.points = points;
-        this.inoFilePath = inoFile;
     }
 
     public Long getId() {
@@ -71,12 +75,28 @@ public class Level {
         this.points = points;
     }
 
-    public String getInoFilePath() {
-        return inoFilePath;
+    public Integer getNodesCount() {
+        return nodesCount;
     }
 
-    public void setInoFilePath(String inoFile) {
-        this.inoFilePath = inoFile;
+    public void setNodesCount(Integer nodesCount) {
+        this.nodesCount = nodesCount;
+    }
+
+    public Integer getEdgesCount() {
+        return edgesCount;
+    }
+
+    public void setEdgesCount(Integer edgesCount) {
+        this.edgesCount = edgesCount;
+    }
+
+    public List<String> getEdges() {
+        return edges;
+    }
+
+    public void setEdges(List<String> edges) {
+        this.edges = edges;
     }
 
     public LevelType getLevelType() {

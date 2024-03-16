@@ -1,5 +1,6 @@
 package com.example.hackathon.security;
 
+import com.example.hackathon.service.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,6 +22,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     @Autowired
     private UserDetailsService userDetailsService;
 
+    private UserService userService;
     @Autowired
     private JwtUtil jwtUtil;
 

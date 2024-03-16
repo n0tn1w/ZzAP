@@ -1,12 +1,15 @@
 package com.example.hackathon.web;
 
+import com.example.hackathon.model.dto.LevelDTO;
 import com.example.hackathon.model.entity.Level;
 import com.example.hackathon.model.enums.LevelType;
 import com.example.hackathon.repository.LevelRepository;
-import com.example.hackathon.service.FileStorageService;
 import com.example.hackathon.service.LevelService;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,26 +19,13 @@ import java.util.Map;
 @RequestMapping("/")
 public class LevelController {
 
-    private final FileStorageService fileStorageService;
     private final LevelRepository levelRepository;
 
     private final LevelService levelService;
 
-    public LevelController(FileStorageService fileStorageService, LevelRepository levelRepository, LevelService levelService) {
-        this.fileStorageService = fileStorageService;
+    public LevelController(LevelRepository levelRepository, LevelService levelService) {
         this.levelRepository = levelRepository;
         this.levelService = levelService;
-    }
-
-    @PostMapping("/upload")
-    public String uploadFile(@RequestParam("file") MultipartFile file) {
-        String fileName = fileStorageService.storeFile(file);
-
-        Level level = new Level();
-        level.setInoFilePath("D:\\stuff2\\data" + fileName);
-        levelRepository.save(level);
-
-        return "File uploaded successfully: " + fileName;
     }
 
     @GetMapping("/levels")
@@ -48,5 +38,11 @@ public class LevelController {
         levelsByType.add(groupedLevels.getOrDefault(LevelType.DEFAULT, new ArrayList<>()));
 
         return levelsByType;
+    }
+
+    @GetMapping("/levels/{id}")
+    public ResponseEntity<LevelDTO> getLevelById(@PathVariable(value = "id") Long id) {
+        LevelDTO levelDto = levelService.getLevelById(id);
+        return ResponseEntity.ok().body(levelDto);
     }
 }
