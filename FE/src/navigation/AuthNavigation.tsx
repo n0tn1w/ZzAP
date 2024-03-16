@@ -1,16 +1,16 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import Home from "../screens/Home";
 import Profile from "../screens/Profile";
 import { BottomNavigation } from "react-native-paper";
 import IconFA from "react-native-vector-icons/FontAwesome5";
 import IconFeather from "react-native-vector-icons/Feather";
 import { CommonActions } from "@react-navigation/native";
 import Play from "../screens/Play";
+import Leaderboard from "../screens/Leaderboard";
 
 export type AuthStackNavigationProps = {
-  home: undefined;
   profile: undefined;
   play: undefined;
+  leaderboard: undefined;
 };
 
 const Tabs = createBottomTabNavigator<AuthStackNavigationProps>();
@@ -61,12 +61,23 @@ export default function AuthNavigationStack() {
       )}
     >
       <Tabs.Screen
-        name="home"
-        component={Home}
+        name="play"
+        component={Play}
         options={{
-          title: "Home",
+          title: "Play",
           tabBarIcon: ({ color }) => (
-            <IconFeather name="home" color={color} size={23} />
+            <IconFeather name="play-circle" color={color} size={23} />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="leaderboard"
+        component={Leaderboard}
+        options={{
+          title: "Leaderboard",
+          tabBarIcon: ({ color }) => (
+            <IconFeather name="leaderboard" color={color} size={23} />
           ),
         }}
       />
@@ -78,17 +89,6 @@ export default function AuthNavigationStack() {
           title: "Profile",
           tabBarIcon: ({ color }) => (
             <IconFeather name="user" color={color} size={23} />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
-        name="play"
-        component={Play}
-        options={{
-          title: "Play",
-          tabBarIcon: ({ color }) => (
-            <IconFeather name="play-circle" color={color} size={23} />
           ),
         }}
       />
