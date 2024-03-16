@@ -22,7 +22,7 @@ String boxValue = "0";
 
 namespace Pins {
   const int R_15 = 15; // Not stable
-  const int R_2 = 2;
+  const int START_2 = 2;
   const int R_0 = 0; // Not stable
   const int R_4 = 4;
   const int R_16 = 16;
@@ -61,6 +61,8 @@ namespace HamiltonGame {
   ActiveGraph activeGraph;
   
   void InitHamilton(std::string inputString) {
+    Serial.print("in:");
+    Serial.println(inputString.c_str());
     DynamicJsonDocument doc(1024); // Adjust capacity as needed
     DeserializationError error = deserializeJson(doc, inputString);
     if (error) {
@@ -68,35 +70,48 @@ namespace HamiltonGame {
         Serial.println(error.c_str());
         return;
     }
-
+    int a = doc["inz"];
+    Serial.println("Seri");
+    Serial.println(a);
     JsonArray dataNodeResultArray = doc["activeNodes"];
+    Serial.println(dataNodeResultArray);
     for (JsonVariant value : dataNodeResultArray) {
-        int node1 = value[0];
+        int node1 = value.as<int>();
         activeGraph.activeNodes.push_back(node1);
     }
   }
 
   void CallStartFE() {
+    Serial.println("CallStartFE");
     message_characteristic->setValue("{command: \"hamilton\"}");
     message_characteristic->notify();  
+    digitalWrite(Pins::START_2, HIGH);
   }
 
   void CallEndGame() {
+    Serial.println("CallEndGame");
     message_characteristic->setValue("{command: \"end\"}");
     message_characteristic->notify();  
+    digitalWrite(Pins::START_2, LOW);
   }
   
   void PlayHamilton() {
-     CallStartFE();
+     Serial.println("PlayHamilton");
      bool allDone = true;
      for(int el : activeGraph.activeNodes) {
-        int state = digitalRead(4);
+        int state = digitalRead(el);
+        Serial.println(el);
+        Serial.print("  ");
+        Serial.print(state);
+
         if(state == 0) {
             allDone = false;
             break;
         }
      }
      if(allDone) {
+      Serial.print("Game over you win!");
+
       Global::command = Const::idle;
       CallEndGame();
      }
@@ -125,26 +140,30 @@ class CharacteristicsCallbacks : public BLECharacteristicCallbacks
     std::string valueWritten = pCharacteristic->getValue().c_str();
 
     if(valueWritten == Const::hamilton) {
+      HamiltonGame::CallStartFE();
       Global::command = Const::hamilton;
+
       Serial.print("You are playing hamilton!");
     } else if(valueWritten == Const::game2) {
       Global::command = Const::game2;
     } else {
+      Serial.println(Global::command.c_str());
       if(Global::command == Const::hamilton) {
+
         //Serial.print("Init hamilton!");
-        //HamiltonGame::InitHamilton(valueWritten);
+        HamiltonGame::InitHamilton(valueWritten);
         Serial.print("Send acknowledge to FE");
         
       } else if(Global::command == Const::game2) {
         
-      }
+      } 
     }
   }
 };
 
 void InitRightSidePins() {
   pinMode(Pins::R_15, INPUT); // Set the diode pin as an output
-  pinMode(Pins::R_2, INPUT); // Set the diode pin as an output
+  pinMode(Pins::START_2, OUTPUT); // Set the diode pin as an output
   pinMode(Pins::R_0, INPUT); // Set the diode pin as an output
   pinMode(Pins::R_4, INPUT); // Set the diode pin as an output
   pinMode(Pins::R_16, INPUT); // Set the diode pin as an output
@@ -201,11 +220,11 @@ void setup()
   // Start advertising
   pServer->getAdvertising()->start();
 
-//  message_characteristic->setValue("Message one");
-//  message_characteristic->setCallbacks(new CharacteristicsCallbacks());
+  message_characteristic->setValue("Message one");
+  message_characteristic->setCallbacks(new CharacteristicsCallbacks());
 
 //  box_characteristic->setValue("0");
-//  box_characteristic->setCallbacks(new CharacteristicsCallbacks());
+  box_characteristic->setCallbacks(new CharacteristicsCallbacks());
 
   Serial.println("Waiting for a client connection to notify...");
 
