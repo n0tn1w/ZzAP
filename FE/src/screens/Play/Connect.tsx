@@ -1,12 +1,11 @@
-import React from 'react'
+import { StackScreenProps } from '@react-navigation/stack';
+import React, { Component } from 'react'
 import { useState } from 'react'
-import { Alert, Platform, Text, View } from 'react-native'
-import Checkbox from '@react-native-community/checkbox'
+import { Alert, Platform, View } from 'react-native'
 import { PermissionsAndroid } from 'react-native'
 import base64 from 'react-native-base64';
 import { BleManager, Device, State } from 'react-native-ble-plx';
-import { LogBox } from 'react-native';
-import { useTheme, Button, ActivityIndicator, Icon, List } from 'react-native-paper';
+import { useTheme, Button, ActivityIndicator, Icon, Text } from 'react-native-paper';
 
 //import Toast from 'react-native-toast-message'
 
@@ -17,22 +16,29 @@ const SERVICE_UUID = '4fafc201-1fb5-459e-8fcc-c5c9c331914b';
 const MESSAGE_UUID = '6d68efe5-04b6-4a85-abc4-c2670b7bf7fd';
 const OBJECT_UUID = 'f27b53ad-c63d-49a0-8c0f-9f297e6cc520';
 
-class ActiveNodes {
-    public activeNodes: number[];
-    constructor(numbers: number[]) {
-        this.activeNodes = numbers;
-    }
+export type LevelData = {
+    activeNodes: number[];
+    edges: [number, number][];
 }
 
-export default function Connect() {
+export type Level = {
+    title: string;
+    description: string;
+    icon: string;
+    data: LevelData;
+}
+
+export default function Connect({ navigation }: StackScreenProps<any>) {
     const { colors } = useTheme();
 
-    //Is a device connected?
     const [isConnected, setIsConnected] = useState(false);
+    const [playing, setPlaying] = useState(false);
     const [connecting, setConnecting] = useState(false);
 
-    //What device is connected?
     const [connectedDevice, setConnectedDevice] = useState<Device>();
+    const [message, setMessage] = useState('Nothing Yet');
+
+    const level1: Level = { title: "Level 1", description: "This level is nice level, very nice, very math. Gg go next. Easy win for jidjkadjiq. dominos. i must scream and i have no mouth", icon: "graphql", data: { activeNodes: [4, 16, 17], edges: [[4, 16], [16, 17]] } };
 
     const subscription = BLTManager.onStateChange((state) => {  // check if device bluetooth is powered on, if not alert to enable it!
         if (state === 'PoweredOff') {
@@ -48,9 +54,6 @@ export default function Connect() {
             subscription.remove();
         }
     }, true);
-
-    const [message, setMessage] = useState('Nothing Yet');
-    const [boxvalue, setBoxValue] = useState(false);
 
     const requestBluetoothPermission = async () => {
         if (Platform.OS === 'ios') {
@@ -78,32 +81,19 @@ export default function Connect() {
                 )
             }
         }
-        /*
-        Toast.show({
-          type: 'info',
-          text1: 'Permissions have not been granted'
-        });
-        */
-
         return false
     }
 
-    // Scans availbale BLT Devices and then call connectDevice
     async function scanDevices() {
-        const numArr = new ActiveNodes([1, 2, 3]);
-        console.log(JSON.stringify(numArr));
-        requestBluetoothPermission().then(answer => {//check answer
+        requestBluetoothPermission().then(answer => {
             if (answer == true) {
                 console.log('scanning');
                 setConnecting(true);
-                // display the Activityindicator
-
                 BLTManager.startDeviceScan(null, null, (error, scannedDevice) => {
                     if (error) {
                         console.warn(error);
                     }
-
-                    if (scannedDevice) {
+                    if (scannedDevice != null) {
                         console.log(scannedDevice.name);
                         if (scannedDevice.name == 'ESP32') {
                             BLTManager.stopDeviceScan();
@@ -111,8 +101,6 @@ export default function Connect() {
                         }
                     }
                 });
-
-                // stop scanning devices after 5 seconds
                 setTimeout(() => {
                     BLTManager.stopDeviceScan();
                 }, 5000);
@@ -122,30 +110,23 @@ export default function Connect() {
         });
     }
 
-    // handle the device disconnection (poorly)
     async function disconnectDevice() {
         console.log('Disconnecting start');
         BLTManager.stopDeviceScan();
 
         if (connectedDevice != null) {
-            const isDeviceConnected = await connectedDevice.isConnected();
-            if (isDeviceConnected) {
-                BLTManager.cancelTransaction('messagetransaction');
-                BLTManager.cancelTransaction('nightmodetransaction');
-                BLTManager.cancelDeviceConnection(connectedDevice.id).then(() =>
-                    console.log('DC completed'),
-                );
+            while ((await connectedDevice.isConnected()) == true) {
+                const isDeviceConnected = await connectedDevice.isConnected();
+                if (isDeviceConnected) {
+                    BLTManager.cancelTransaction('messagetransaction');
+                    BLTManager.cancelTransaction('nightmodetransaction');
+                    BLTManager.cancelDeviceConnection(connectedDevice.id);
+                }
             }
-
-            const connectionStatus = await connectedDevice.isConnected();
-            if (!connectionStatus) {
-                setIsConnected(false);
-                setConnecting(false);
-            }
-        } else {
-            setIsConnected(false);
-            setConnecting(false);
+            console.log('DC completed');
         }
+        setIsConnected(false);
+        setConnecting(false);
     }
 
     //Function to send object data to ESP32
@@ -175,7 +156,6 @@ export default function Connect() {
     //Connect the device and start monitoring characteristics
     async function connectDevice(device: Device) {
         console.log('connecting to Device:', device.name);
-
         device
             .connect()
             .then(device => {
@@ -184,31 +164,18 @@ export default function Connect() {
                 return device.discoverAllServicesAndCharacteristics();
             })
             .then(device => {
-                //  Set what to do when DC is detected
                 BLTManager.onDeviceDisconnected(device.id, (error, device) => {
                     console.log('Device DC');
                     setIsConnected(false);
+                    setConnecting(false);
                 });
 
-                //Read inital values
-
-                //Message
                 device
                     .readCharacteristicForService(SERVICE_UUID, MESSAGE_UUID)
                     .then(valenc => {
                         setMessage(base64.decode(valenc?.value ?? ""));
                     });
 
-                //BoxValue
-                device
-                    .readCharacteristicForService(SERVICE_UUID, OBJECT_UUID)
-                    .then(valenc => {
-                        setBoxValue(StringToBool(base64.decode(valenc?.value ?? "")));
-                    });
-
-                //monitor values and tell what to do when receiving an update
-
-                //Message
                 device.monitorCharacteristicForService(
                     SERVICE_UUID,
                     MESSAGE_UUID,
@@ -224,36 +191,17 @@ export default function Connect() {
                     'messagetransaction',
                 );
 
-                /*
-                //BoxValue
-                device.monitorCharacteristicForService(
-                    SERVICE_UUID,
-                    BOX_UUID,
-                    (error, characteristic) => {
-                        if (characteristic?.value != null) {
-                            setBoxValue(StringToBool(base64.decode(characteristic?.value)));
-                            console.log(
-                                'Box Value update received: ',
-                                base64.decode(characteristic?.value),
-                            );
-                        }
-                    },
-                    'boxtransaction',
-                );
-                */
-
                 console.log('Connection established');
                 //sendMessageValue("{command:\"hamilton\"}");
                 sendMessageValue("hamilton");
                 //sendMessageValue("{\"inz\":5}");
 
                 //sendMessageValue("{command:\"startAc\"}");
-
-                const numArr = new ActiveNodes([4]);
                 //sendMessageValue("{command:\"stopAc\"}");
-                sendObjectValue(JSON.stringify(numArr));
+                sendObjectValue(JSON.stringify(level1.data));
             });
     }
+
     return (
         <View
             style={{
@@ -263,7 +211,8 @@ export default function Connect() {
                 justifyContent: "center",
                 backgroundColor: colors.background,
             }}>
-            {!isConnected ? (
+
+            {!playing ? (!isConnected ? (
                 connecting ? (<View style={{ gap: 5 }}>
                     <ActivityIndicator animating={true} />
                     <Button
@@ -297,10 +246,10 @@ export default function Connect() {
                         Connect
                     </Button></View>)
             ) : (
-                <View>
+                <View style={{ gap: 150 }}>
                     <Icon source="check-circle" size={200} color={colors.primary}></Icon>
                     <Button
-                        mode="contained"
+                        mode="outlined"
                         onPress={() => {
                             disconnectDevice();
                         }}
@@ -308,6 +257,29 @@ export default function Connect() {
                     >
                         Disconnect
                     </Button>
+                    <Button
+                        mode="contained"
+                        onPress={() => {
+                            setPlaying(true);
+                        }}
+                        disabled={false}
+                    >
+                        Start Level
+                    </Button>
+                </View>
+            )) : (
+                <View style={{
+                    flex: 1,
+                    gap: 20,
+                    paddingVertical: 26,
+                    paddingHorizontal: 26,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: colors.background,
+                }}>
+                    <Text variant="titleLarge">{level1.title}</Text>
+                    <Text variant="bodyLarge">{level1.description}</Text>
+                    <Icon source={level1.icon} size={200} color={colors.primary}></Icon>
                 </View>
             )
             }
