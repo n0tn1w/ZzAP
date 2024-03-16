@@ -52,4 +52,10 @@ export const styles = (colors: MD3Colors) =>
       fontSize: 30,
       color: "white",
     },
+    modalContainer: {
+      backgroundColor: colors.elevation.level3,
+      padding: 20,
+      margin: 20,
+      borderRadius: 20,
+    },
   });

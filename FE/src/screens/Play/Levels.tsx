@@ -1,5 +1,5 @@
 import { StackScreenProps } from "@react-navigation/stack";
-import { Text } from "react-native-paper";
+import { Icon, PaperProvider, Portal, Text, Modal } from "react-native-paper";
 import { useTheme, Button } from "react-native-paper";
 import { FlatList, View } from "react-native";
 import { styles } from "./Styles";
@@ -7,7 +7,6 @@ import { Image } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import React from "react";
 import TrophyIcon from "react-native-vector-icons/MaterialCommunityIcons";
-import ImformationIcon from "react-native-vector-icons/MaterialCommunityIcons";
 
 interface Level {
   id: number;
@@ -88,7 +87,7 @@ export default function Levels({ navigation }: StackScreenProps<any>) {
             </Button>
             <Button
               mode="outlined"
-              onPress={() => console.log(`Pressed ${id}`)}
+              onPress={() => navigation.navigate("level1information")}
             >
               <TrophyIcon size={20} name="information" />
             </Button>

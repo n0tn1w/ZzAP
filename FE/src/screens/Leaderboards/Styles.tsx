@@ -81,6 +81,7 @@ export const styles = (colors: MD3Colors) =>
       paddingTop: 80,
       paddingLeft: 20,
       paddingBottom: 20,
+      backgroundColor: colors.elevation.level2,
     },
 
     title: {
