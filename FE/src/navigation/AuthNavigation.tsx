@@ -78,6 +78,7 @@ export default function AuthNavigationStack() {
         // @ts-ignore
         options={{
           title: "Play",
+          headerShown: false,
           tabBarIcon: ({ color }) => (
             <IconFeather name="play-circle" color={color} size={23} />
           ),
