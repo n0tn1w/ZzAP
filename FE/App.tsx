@@ -1,32 +1,36 @@
-import { useFonts } from 'expo-font';
-import { useEffect } from 'react';
-import { TamaguiProvider, Theme, View, createTamagui } from 'tamagui';
-import config from "@tamagui/config/v3";
-import Navigation from "./src/navigation"
+import Navigation from "./src/navigation";
+import { useEffect } from "react";
+import { useFonts } from "expo-font";
+import * as SplashScreen from "expo-splash-screen";
+import { ColorsSchemeProvider } from "./src/themes/ThemeProvider";
+import { AuthProvider } from "./src/contexts/AuthContext";
 
-const appConfig = createTamagui(config);
+SplashScreen.preventAutoHideAsync();
 
 export default function App() {
-  const [loaded] = useFonts({
-    Inter: require("@tamagui/font-inter/otf/Inter-Medium.otf"),
-    InterBold: require("@tamagui/font-inter/otf/Inter-Bold.otf"),
+  const [fontsLoaded] = useFonts({
+    Raleway: require("./assets/Raleway-Regular.ttf"),
   });
 
   useEffect(() => {
-    if (loaded) {
-      // can hide splash screen here
-    }
-  }, [loaded])
+    const dismountSplash = async () => {
+      if (fontsLoaded) {
+        await SplashScreen.hideAsync();
+      }
+    };
 
-  if (!loaded) {
+    dismountSplash();
+  }, [fontsLoaded]);
+
+  if (!fontsLoaded) {
     return null;
   }
-  
+
   return (
-    <TamaguiProvider config={appConfig}>
-      <Theme name="light">
-          <Navigation />
-      </Theme>
-    </TamaguiProvider>
+    <AuthProvider>
+      <ColorsSchemeProvider>
+        <Navigation />
+      </ColorsSchemeProvider>
+    </AuthProvider>
   );
 }
