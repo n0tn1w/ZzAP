@@ -4,6 +4,7 @@ import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { ColorsSchemeProvider } from "./src/themes/ThemeProvider";
 import { AuthProvider } from "./src/contexts/AuthContext";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -27,10 +28,10 @@ export default function App() {
   }
 
   return (
-    <AuthProvider>
-      <ColorsSchemeProvider>
-        <Navigation />
-      </ColorsSchemeProvider>
-    </AuthProvider>
+      <AuthProvider>
+        <ColorsSchemeProvider>
+          <Navigation />
+        </ColorsSchemeProvider>
+      </AuthProvider>
   );
 }

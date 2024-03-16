@@ -1,13 +1,16 @@
 import React from "react";
 import { Text, useTheme } from "react-native-paper";
 import { View } from "react-native";
-import { DataTable } from "react-native-paper";
 import { Avatar } from "react-native-paper";
-import CrownIcon from "react-native-vector-icons/MaterialCommunityIcons";
 import { Image } from "react-native";
 import { styles } from "./Styles";
-import { Scroll } from "@tamagui/lucide-icons";
-import { FlatList, ScrollView } from "react-native-gesture-handler";
+import {
+  FlatList,
+  Gesture,
+  GestureHandlerRootView,
+  ScrollView,
+} from "react-native-gesture-handler";
+import { transparent } from "react-native-paper/lib/typescript/styles/themes/v2/colors";
 
 export default function Leaderboard() {
   const { colors } = useTheme();
@@ -138,121 +141,71 @@ export default function Leaderboard() {
   const styleSheet = styles(colors);
 
   const Item = ({ item, index }: any) => (
-    <View style={styleSheet.row}>
-      <Text>{index}</Text>
-      <Text>{item.name}</Text>
-      <Avatar.Text size={64} label={item.name} />
+    <View style={[styleSheet.row, index === 4 ? styleSheet.myRank : null]}>
+      <Text style={styleSheet.rankNumber}>{index}</Text>
+      <Avatar.Image size={40} source={getImage()} style={styleSheet.avatar} />
+      <Text style={styleSheet.name}>{item.name}</Text>
       <Text>{item.score}</Text>
     </View>
   );
 
   const top3 = [usersRanked[1], usersRanked[0], usersRanked[2]];
+  const profilePics = [
+    require("../../assets/avatars/person1.png"),
+    require("../../assets/avatars/person2.png"),
+    require("../../assets/avatars/person3.png"),
+    require("../../assets/avatars/person4.png"),
+  ];
+
+  const getImage = () => profilePics[Math.floor(Math.random() * (3 - 0) + 0)];
+
+  const getAwardImage = (index: number) =>
+    index === 0
+      ? require("../../assets/secondPlaceLeaderBoard.png")
+      : index === 1
+        ? require("../../assets/firstPlaceLeaderboard.png")
+        : require("../../assets/thirdPlaceLeaderBoard.png");
+
+  const getAwardImageStyle = (index: number) =>
+    index === 1
+      ? styleSheet.firstPlaceAwardImage
+      : styleSheet.generalAwardImage;
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <View style={styleSheet.top3Container}>
-        {/* <View
-          onTouchStart={() => console.log("touch 2nd")}
-          style={{
-            ...styleSheet.placesContainer,
-            paddingTop: 50,
-            paddingRight: 20,
-          }}
-        >
-          <Image
-            source={require("../../assets/secondPlaceLeaderBoard.png")}
-            style={styleSheet.medalionImage}
-          />
-          <Avatar.Text size={64} label="2" style={styleSheet.avatarContainer} />
-          {usersRanked[1] == null ? (
-            <Text>No Data</Text>
-          ) : (
-            <Text>{usersRanked[1].name}</Text>
-          )}
-        </View> */}
-        {/* <View
-          onTouchStart={() => console.log("touch 1st")}
-          style={{ ...styleSheet.placesContainer, paddingBottom: 20 }}
-        >
-          <Image
-            source={require("../../assets/firstPlaceLeaderboard.png")}
-            style={styleSheet.medalionImage}
-          />
-          <Avatar.Text size={76} label="1" style={styleSheet.avatarContainer} />
-          {usersRanked[0] == null ? (
-            <Text>No Data</Text>
-          ) : (
-            <Text>{usersRanked[0].name}</Text>
-          )}
-        </View> */}
-        {/* <View
-          onTouchStart={() => console.log("touch 3rd")}
-          style={{
-            ...styleSheet.placesContainer,
-            paddingTop: 50,
-            paddingLeft: 20,
-          }}
-        >
-          <Image
-            source={require("../../assets/thirdPlaceLeaderBoard.png")}
-            style={styleSheet.medalionImage}
-          />
-          <Avatar.Text size={64} label="3" style={styleSheet.avatarContainer} />
-          {usersRanked[2] == null ? (
-            <Text>No Data</Text>
-          ) : (
-            <Text>{usersRanked[2].name}</Text>
-          )}
-        </View> */}
-
+    <View style={styleSheet.view}>
+      <View style={styleSheet.top3Section}>
         {top3.map((user, index) => (
           <View
+            style={
+              index === 1
+                ? { ...styleSheet.firstPlace, ...styleSheet.generalPlace }
+                : styleSheet.generalPlace
+            }
             key={user.key}
             onTouchStart={() => console.log(`touch ${index + 1}st`)}
-            style={{
-              ...styleSheet.placesContainer,
-              paddingTop: 50,
-              paddingRight: index === 0 ? 20 : index === 2 ? 20 : 0,
-              paddingLeft: index === 0 ? 20 : index === 2 ? 20 : 0,
-            }}
           >
             <Image
-              source={
-                index === 0
-                  ? require("../../assets/secondPlaceLeaderBoard.png")
-                  : index === 1
-                    ? require("../../assets/firstPlaceLeaderboard.png")
-                    : require("../../assets/thirdPlaceLeaderBoard.png")
-              }
-              style={styleSheet.medalionImage}
+              source={getAwardImage(index)}
+              style={getAwardImageStyle(index)}
             />
-            <Avatar.Text
-              size={index === 1 ? 90 : 50}
-              label={user.name}
-              style={
-                index === 1
-                  ? {
-                      ...styleSheet.firstPalceStyle,
-                      ...styleSheet.generalTop3UserStyle,
-                    }
-                  : styleSheet.generalTop3UserStyle
-              }
+            <Avatar.Image
+              size={index === 1 ? 75 : 60}
+              source={getImage()}
+              style={styleSheet.avatar}
             />
-            <Text>{user.name}</Text>
+            <Text style={styleSheet.top3Name}>{user.name}</Text>
           </View>
         ))}
       </View>
-      {/* <View>
-        {usersRanked.length < 3 ? (
-          <Text>No table</Text>
-        ) : (
-          <FlatList
-            data={usersRanked}
-            renderItem={(props) => <Item props={props} />}
-            keyExtractor={(item) => `${item.key}`}
-          />
-        )}
-      </View> */}
+
+      <GestureHandlerRootView>
+        <FlatList
+          style={styleSheet.flatList}
+          data={usersRanked.slice(3, usersRanked.length)}
+          renderItem={({ item, index }) => <Item item={item} index={index} />}
+          keyExtractor={(item) => `${item.key}`}
+        />
+      </GestureHandlerRootView>
     </View>
   );
 }
