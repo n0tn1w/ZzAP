@@ -1,11 +1,11 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import Profile from "../screens/Profile";
+import Profile from "../screens/Profile/Profile";
 import { BottomNavigation, useTheme } from "react-native-paper";
 import LeaderboardIcon from "react-native-vector-icons/MaterialIcons";
 import IconFeather from "react-native-vector-icons/Feather";
 import { CommonActions } from "@react-navigation/native";
-import Play from "../screens/Play";
-import Leaderboard from "../screens/Leaderboard";
+import Play from "../screens/Play/Play";
+import Leaderboard from "../screens/Leaderboards/Leaderboard";
 
 export type AuthStackNavigationProps = {
   profile: undefined;
@@ -105,6 +105,7 @@ export default function AuthNavigationStack() {
         // @ts-ignore
         options={{
           title: "Profile",
+          headerShown: false,
           tabBarIcon: ({ color }) => (
             <IconFeather name="user" color={color} size={23} />
           ),
