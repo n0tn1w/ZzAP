@@ -46,9 +46,8 @@ public class LeaderboardService {
     }
 
     private String determineDivision(Integer score) {
-        if (score > 100) return "Diamond";
-        else if (score > 50) return "Gold";
-        else if (score > 10) return "Silver";
-        else return "Bronze";
+        if (score > 20) return "gold";
+        else if (score > 10) return "silver";
+        else return "bronze";
     }
 }
