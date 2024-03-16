@@ -34,7 +34,7 @@ export const styles = (colors: MD3Colors) =>
       flexDirection: "row",
       justifyContent: "space-between",
       alignItems: "center",
-      gap: 4,
+      gap: 80,
     },
     image: {
       backgroundColor: colors.elevation.level2,
