@@ -1,11 +1,12 @@
 import React from 'react'
 import { useState } from 'react'
-import { Button, Text } from 'tamagui'
-import { Platform } from 'react-native'
+import { Button, Platform, Text, View } from 'react-native'
+import Checkbox from '@react-native-community/checkbox'
 import { PermissionsAndroid } from 'react-native'
 import base64 from 'react-native-base64';
 import { BleManager, Device } from 'react-native-ble-plx';
 import { LogBox } from 'react-native';
+//import Toast from 'react-native-toast-message'
 
 export const manager = new BleManager()
 
@@ -19,18 +20,44 @@ export default function Play() {
   const [message, setMessage] = useState('Nothing Yet');
   const [boxvalue, setBoxValue] = useState(false);
 
+  const requestBluetoothPermission = async () => {
+    if (Platform.OS === 'ios') {
+      return true
+    }
+    if (Platform.OS === 'android' && PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION) {
+      const apiLevel = parseInt(Platform.Version.toString(), 10)
+
+      if (apiLevel < 31) {
+        const granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION)
+        return granted === PermissionsAndroid.RESULTS.GRANTED
+      }
+      if (PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN && PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT) {
+        const result = await PermissionsAndroid.requestMultiple([
+          PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+          PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+        ])
+
+        return (
+          result['android.permission.BLUETOOTH_CONNECT'] === PermissionsAndroid.RESULTS.GRANTED &&
+          result['android.permission.BLUETOOTH_SCAN'] === PermissionsAndroid.RESULTS.GRANTED &&
+          result['android.permission.ACCESS_FINE_LOCATION'] === PermissionsAndroid.RESULTS.GRANTED
+        )
+      }
+    }
+    /*
+    Toast.show({
+      type: 'info',
+      text1: 'Permissions have not been granted'
+    });
+    */
+
+    return false
+  }
+
   // Scans availbale BLT Devices and then call connectDevice
   async function scanDevices() {
-    PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-      {
-        title: 'Permission Localisation Bluetooth',
-        message: 'Requirement for Bluetooth',
-        buttonNeutral: 'Later',
-        buttonNegative: 'Cancel',
-        buttonPositive: 'OK',
-      },
-    ).then(answere => {
+    requestBluetoothPermission().then(answer => {//check answer
       console.log('scanning');
       // display the Activityindicator
 
@@ -39,9 +66,12 @@ export default function Play() {
           console.warn(error);
         }
 
-        if (scannedDevice && scannedDevice.name == 'BLEExample') {
-          BLTManager.stopDeviceScan();
-          connectDevice(scannedDevice);
+        if (scannedDevice) {
+          console.log(scannedDevice.name);
+          if (scannedDevice.name == 'ESP32') {
+            BLTManager.stopDeviceScan();
+            connectDevice(scannedDevice);
+          }
         }
       });
 
@@ -61,7 +91,6 @@ export default function Play() {
       if (isDeviceConnected) {
         BLTManager.cancelTransaction('messagetransaction');
         BLTManager.cancelTransaction('nightmodetransaction');
-
         BLTManager.cancelDeviceConnection(connectedDevice.id).then(() =>
           console.log('DC completed'),
         );
@@ -157,7 +186,27 @@ export default function Play() {
       });
   }
   return (
-    <Text>play</Text>)
+    <View>
+      {!isConnected ? (
+        <Button
+          title="Connect"
+          onPress={() => {
+            scanDevices();
+          }}
+          disabled={false}
+        />
+      ) : (
+        <Button
+          title="Disconnect"
+          onPress={() => {
+            disconnectDevice();
+          }}
+          disabled={false}
+        />
+      )}
+      <Text>{message}</Text>
+    </View>
+  )
 }
 
 LogBox.ignoreLogs(['new NativeEventEmitter']); // Ignore log notification by message
