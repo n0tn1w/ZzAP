@@ -22,8 +22,10 @@ export default function AuthNavigationStack() {
     headerStyle: {
       borderWidth: 0,
       shadowOpacity: 0,
+      backgroundColor: colors.elevation.level2,
     },
-    headerTitleAlign: "left",
+    headerTitleAlign: "center",
+    headerTintColor: colors.onSurface,
   };
 
   return (
@@ -89,6 +91,7 @@ export default function AuthNavigationStack() {
         // @ts-ignore
         options={{
           title: "Leaderboard",
+          // headerShown: false,
           tabBarIcon: ({ color }) => (
             <LeaderboardIcon name="leaderboard" color={color} size={23} />
           ),
