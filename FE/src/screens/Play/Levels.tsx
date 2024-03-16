@@ -8,7 +8,7 @@ export default function Levels({ navigation }: StackScreenProps<any>) {
 
     return (<Button
         mode="contained"
-        onPress={() => { navigation.navigate("connect") }}
+        onPress={() => { navigation.navigate("connect") }} // give param
     >
         Level 1
     </Button>);

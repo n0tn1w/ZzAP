@@ -1,6 +1,9 @@
 import { createStackNavigator } from "@react-navigation/stack";
 import Levels from "./Levels";
-import Connect from "./Connect";
+import Connect, { Level } from "./Connect";
+import LevelDescription from "./LevelDescription";
+
+type PublicStackProps = { levels: undefined, connect: undefined, description: { level: Level | undefined } }
 
 const PublicStack = createStackNavigator();
 
@@ -13,6 +16,8 @@ export default function NavigationStack() {
     >
       <PublicStack.Screen name="levels" component={Levels} />
       <PublicStack.Screen name="connect" component={Connect} />
+      <PublicStack.Screen name="description" component={LevelDescription} />
+
     </PublicStack.Navigator>
   );
 }
