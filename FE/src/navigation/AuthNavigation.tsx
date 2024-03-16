@@ -1,6 +1,6 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Profile from "../screens/Profile";
-import { BottomNavigation } from "react-native-paper";
+import { BottomNavigation, useTheme } from "react-native-paper";
 import LeaderboardIcon from "react-native-vector-icons/MaterialIcons";
 import IconFeather from "react-native-vector-icons/Feather";
 import { CommonActions } from "@react-navigation/native";
@@ -16,6 +16,7 @@ export type AuthStackNavigationProps = {
 const Tabs = createBottomTabNavigator<AuthStackNavigationProps>();
 
 export default function AuthNavigationStack() {
+  const { colors } = useTheme();
   const generalOptions = {
     tabBarShowLabel: true,
     headerStyle: {

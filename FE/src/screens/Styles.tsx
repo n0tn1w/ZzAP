@@ -1,15 +1,30 @@
 import { StyleSheet } from "react-native";
+import { MD3Colors } from "react-native-paper/lib/typescript/types";
 
-export default StyleSheet.create({
-  medalionImage: {
-    width: 80,
-    height: 80,
-  },
-  top3Container: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-    padding: 10,
-  },
-  container: { flex: 1, justifyContent: "flex-start", alignItems: "center" },
-});
+export const styles = (colors: MD3Colors) =>
+  StyleSheet.create({
+    medalionImage: {
+      width: 40,
+      height: 40,
+    },
+    top3Container: {
+      flexDirection: "row",
+      justifyContent: "space-around",
+      alignItems: "center",
+      backgroundColor: colors.backdrop,
+      borderBottomLeftRadius: 25,
+      borderBottomRightRadius: 25,
+    },
+    placesContainer: {
+      flexDirection: "column",
+      justifyContent: "space-around",
+      alignItems: "center",
+      padding: 10,
+      gap: 4.5,
+    },
+    avatarContainer: {
+      borderWidth: 2,
+      borderColor: "yellow",
+      borderRadius: 50,
+    },
+  });

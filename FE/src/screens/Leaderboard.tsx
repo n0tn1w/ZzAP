@@ -1,13 +1,16 @@
 import React from "react";
-import { Text } from "react-native-paper";
+import { Text, useTheme } from "react-native-paper";
 import { View } from "react-native";
 import { DataTable } from "react-native-paper";
 import { Avatar } from "react-native-paper";
 import CrownIcon from "react-native-vector-icons/MaterialCommunityIcons";
 import { Image } from "react-native";
-import Styles from "./Styles";
+import { styles } from "./Styles";
+import { Scroll } from "@tamagui/lucide-icons";
+import { ScrollView } from "react-native-gesture-handler";
 
 export default function Leaderboard() {
+  const { colors } = useTheme();
   const [page, setPage] = React.useState<number>(0);
   const [numberOfItemsPerPageList] = React.useState([2, 3, 4]);
   const [itemsPerPage, onItemsPerPageChange] = React.useState(
@@ -45,6 +48,60 @@ export default function Leaderboard() {
       time: 305,
       score: 3.7,
     },
+    {
+      key: 6,
+      name: "Mason",
+      time: 305,
+      score: 3.7,
+    },
+    {
+      key: 7,
+      name: "Mason",
+      time: 305,
+      score: 3.7,
+    },
+    {
+      key: 8,
+      name: "Mason",
+      time: 305,
+      score: 3.7,
+    },
+    {
+      key: 9,
+      name: "Mason",
+      time: 305,
+      score: 3.7,
+    },
+    {
+      key: 10,
+      name: "Mason",
+      time: 305,
+      score: 3.7,
+    },
+    {
+      key: 11,
+      name: "Mason",
+      time: 305,
+      score: 3.7,
+    },
+    {
+      key: 12,
+      name: "Mason",
+      time: 305,
+      score: 3.7,
+    },
+    {
+      key: 13,
+      name: "Mason",
+      time: 305,
+      score: 3.7,
+    },
+    {
+      key: 14,
+      name: "AAAAA",
+      time: 305,
+      score: 3.7,
+    },
   ]);
 
   const from = 3;
@@ -54,55 +111,66 @@ export default function Leaderboard() {
     setPage(0);
   }, [itemsPerPage]);
 
+  const styleSheet = styles(colors);
+
   return (
-    <>
-      <View style={Styles.container}>
-        <Text style={{ fontSize: 30, fontWeight: "bold" }}>Top 3</Text>
-        <View style={Styles.top3Container}>
-          <View>
-            <Image
-              source={require("../../assets/silver-medal.png")}
-              style={Styles.medalionImage}
-            />
-            <Avatar.Text size={64} label="1" />
-          </View>
-          <View>
-            <Image
-              source={require("../../assets/gold-medal.png")}
-              style={Styles.medalionImage}
-            />
-            <Avatar.Text size={64} label="1" />
-          </View>
-          <View>
-            <Image
-              source={require("../../assets/bronze-medal.png")}
-              style={Styles.medalionImage}
-            />
-            <Avatar.Text size={64} label="1" />
-          </View>
+    <View style={{ flex: 1, backgroundColor: colors.primaryContainer }}>
+      <View style={styleSheet.top3Container}>
+        <View
+          onTouchStart={() => console.log("touch 2nd")}
+          style={{
+            ...styleSheet.placesContainer,
+            paddingTop: 50,
+            paddingRight: 20,
+          }}
+        >
+          <Image
+            source={require("../../assets/secondPlaceLeaderBoard.png")}
+            style={styleSheet.medalionImage}
+          />
+          <Avatar.Text size={64} label="1" style={styleSheet.avatarContainer} />
+        </View>
+        <View
+          onTouchStart={() => console.log("touch 1st")}
+          style={{ ...styleSheet.placesContainer, paddingBottom: 20 }}
+        >
+          <Image
+            source={require("../../assets/firstPlaceLeaderboard.png")}
+            style={styleSheet.medalionImage}
+          />
+          <Avatar.Text size={76} label="1" style={styleSheet.avatarContainer} />
+        </View>
+        <View
+          onTouchStart={() => console.log("touch 3rd")}
+          style={{
+            ...styleSheet.placesContainer,
+            paddingTop: 50,
+            paddingLeft: 20,
+          }}
+        >
+          <Image
+            source={require("../../assets/thirdPlaceLeaderBoard.png")}
+            style={styleSheet.medalionImage}
+          />
+          <Avatar.Text size={64} label="1" style={styleSheet.avatarContainer} />
         </View>
       </View>
-      <View
-        style={[
-          {
-            flex: 1,
-            justifyContent: "flex-end",
-            alignItems: "center",
-          },
-        ]}
-      >
+      <View>
         {items.length < 3 ? (
           <Text>No table</Text>
         ) : (
           <DataTable>
             <DataTable.Header>
               <DataTable.Title>Username</DataTable.Title>
-              <DataTable.Title numeric>Time</DataTable.Title>
               <DataTable.Title numeric>Score</DataTable.Title>
+              <DataTable.Title numeric>Division</DataTable.Title>
             </DataTable.Header>
 
             {items.slice(from, to).map((item) => (
-              <DataTable.Row key={item.key}>
+              <DataTable.Row
+                onPress={() => console.log(item.name)}
+                key={item.key}
+              >
                 <DataTable.Cell>{item.name}</DataTable.Cell>
                 <DataTable.Cell numeric>{item.time}</DataTable.Cell>
                 <DataTable.Cell numeric>{item.score}</DataTable.Cell>
@@ -123,6 +191,6 @@ export default function Leaderboard() {
           </DataTable>
         )}
       </View>
-    </>
+    </View>
   );
 }
