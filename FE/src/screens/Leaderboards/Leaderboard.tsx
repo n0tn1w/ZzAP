@@ -1,152 +1,62 @@
-import React from "react";
-import { Text, useTheme } from "react-native-paper";
+
 import { View, Image } from "react-native";
+import React, { useEffect, useState } from "react";
+import { ActivityIndicator, Text, useTheme } from "react-native-paper";
 import { Avatar } from "react-native-paper";
 import { styles } from "./Styles";
-import {
-  FlatList,
-  Gesture,
-  GestureHandlerRootView,
-  ScrollView,
-} from "react-native-gesture-handler";
-import { transparent } from "react-native-paper/lib/typescript/styles/themes/v2/colors";
+import { FlatList, GestureHandlerRootView } from "react-native-gesture-handler";
+import useAxios from "../../utils/useAxios";
+import { useAuth } from "../../contexts/AuthContext";
+
+type LeaderbaordEntity = {
+  username: string;
+  score: number;
+  division: string;
+};
 
 export default function Leaderboard() {
   const { colors } = useTheme();
-  const [page, setPage] = React.useState<number>(0);
-  const [numberOfItemsPerPageList] = React.useState([2, 3, 4]);
-  const [itemsPerPage, onItemsPerPageChange] = React.useState(
-    numberOfItemsPerPageList[0]
-  );
+  const { user } = useAuth();
+  const [isLoading, setIsLoading] = useState(true);
 
-  const [usersRanked] = React.useState([
-    {
-      key: 1,
-      name: "John",
-      time: 356,
-      score: 16,
-    },
-    {
-      key: 2,
-      name: "Ivan",
-      time: 262,
-      score: 16,
-    },
-    {
-      key: 3,
-      name: "George",
-      time: 159,
-      score: 6,
-    },
-    {
-      key: 4,
-      name: "Emily",
-      time: 421,
-      score: 22,
-    },
-    {
-      key: 5,
-      name: "Sophia",
-      time: 289,
-      score: 18,
-    },
-    {
-      key: 6,
-      name: "Daniel",
-      time: 198,
-      score: 11,
-    },
-    {
-      key: 7,
-      name: "Emma",
-      time: 333,
-      score: 15,
-    },
-    {
-      key: 8,
-      name: "Liam",
-      time: 176,
-      score: 9,
-    },
-    {
-      key: 9,
-      name: "Olivia",
-      time: 402,
-      score: 20,
-    },
-    {
-      key: 10,
-      name: "Michael",
-      time: 312,
-      score: 17,
-    },
-    {
-      key: 11,
-      name: "Ava",
-      time: 245,
-      score: 14,
-    },
-    {
-      key: 12,
-      name: "William",
-      time: 389,
-      score: 21,
-    },
-    {
-      key: 13,
-      name: "Ethan",
-      time: 174,
-      score: 10,
-    },
-    {
-      key: 14,
-      name: "Isabella",
-      time: 376,
-      score: 19,
-    },
-    {
-      key: 15,
-      name: "James",
-      time: 298,
-      score: 16,
-    },
-    {
-      key: 16,
-      name: "Mia",
-      time: 211,
-      score: 12,
-    },
-    {
-      key: 17,
-      name: "Alexander",
-      time: 344,
-      score: 18,
-    },
-    {
-      key: 18,
-      name: "Charlotte",
-      time: 186,
-      score: 11,
-    },
-  ]);
+  const axios = useAxios(true);
+  useEffect(() => {
+    const fetchLeaderboard = async () => {
+      setIsLoading(true);
+      try {
+        const res = await axios.get<LeaderbaordEntity[]>("/leaderboard");
+        setUserRanked(res.data);
+      } catch (error) {
+        // TODO
+        console.log(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const from = 3;
-  const to = usersRanked.length;
+    fetchLeaderboard();
+  }, []);
 
-  React.useEffect(() => {
-    setPage(0);
-  }, [itemsPerPage]);
-
+  const [usersRanked, setUserRanked] = React.useState<LeaderbaordEntity[]>([]);
   const styleSheet = styles(colors);
 
-  const Item = ({ item, index }: any) => (
-    <View style={[styleSheet.row, index === 4 ? styleSheet.myRank : null]}>
-      <Text style={styleSheet.rankNumber}>{index + 4}</Text>
-      <Avatar.Image size={40} source={getImage()} style={styleSheet.avatar} />
-      <Text style={styleSheet.name}>{item.name}</Text>
-      <Text>{item.score}</Text>
-    </View>
-  );
+  const Item = ({ item, index }: any) => {
+    console.log(item.username);
+
+    return (
+      <View
+        style={[
+          styleSheet.row,
+          item.username === user?.username ? styleSheet.myRank : null,
+        ]}
+      >
+        <Text style={styleSheet.rankNumber}>{index + 4}</Text>
+        <Avatar.Image size={40} source={getImage()} style={styleSheet.avatar} />
+        <Text style={styleSheet.name}>{item.username}</Text>
+        <Text>{item.score}</Text>
+      </View>
+    );
+  };
 
   const top3 = [usersRanked[1], usersRanked[0], usersRanked[2]];
   const profilePics = [
@@ -170,6 +80,34 @@ export default function Leaderboard() {
       ? styleSheet.firstPlaceAwardImage
       : styleSheet.generalAwardImage;
 
+  if (isLoading) {
+    return (
+      <View
+        style={{
+          justifyContent: "center",
+          alignItems: "center",
+          ...styleSheet.view,
+        }}
+      >
+        <ActivityIndicator animating={true} size="large" />
+      </View>
+    );
+  }
+
+  if (usersRanked.length === 0) {
+    return (
+      <View
+        style={{
+          justifyContent: "center",
+          alignItems: "center",
+          ...styleSheet.view,
+        }}
+      >
+        <Text variant="headlineLarge">Nothing here</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styleSheet.view}>
       <View style={styleSheet.top3Section}>
@@ -180,7 +118,7 @@ export default function Leaderboard() {
                 ? { ...styleSheet.firstPlace, ...styleSheet.generalPlace }
                 : styleSheet.generalPlace
             }
-            key={user.key}
+            key={user.username}
             onTouchStart={() => console.log(`touch ${index + 1}st`)}
           >
             <Image
@@ -192,7 +130,7 @@ export default function Leaderboard() {
               source={getImage()}
               style={styleSheet.avatar}
             />
-            <Text style={styleSheet.top3Name}>{user.name}</Text>
+            <Text style={styleSheet.top3Name}>{user.username}</Text>
           </View>
         ))}
       </View>
@@ -202,7 +140,7 @@ export default function Leaderboard() {
           style={styleSheet.flatList}
           data={usersRanked.slice(3, usersRanked.length)}
           renderItem={({ item, index }) => <Item item={item} index={index} />}
-          keyExtractor={(item) => `${item.key}`}
+          keyExtractor={(item) => `${item.username}`}
         />
       </GestureHandlerRootView>
     </View>
