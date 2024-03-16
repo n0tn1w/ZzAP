@@ -3,9 +3,9 @@ import { Button, Text, useTheme } from "react-native-paper";
 import MainView from "../../components/MainView";
 import { View } from "react-native";
 import { FormInput } from "../../components/FormInput";
-import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import { User, useAuth } from "../../contexts/AuthContext";
+import useAxios from "../../utils/useAxios";
 
 type LoginResponse = {
   jwt: string;
@@ -15,6 +15,7 @@ export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
+  const axios = useAxios();
   const { colors } = useTheme();
   const { login } = useAuth();
 
@@ -25,10 +26,10 @@ export default function Login() {
         password,
       });
 
-      const user: User = jwtDecode(res.data.jwt);
-      login(user.username);
+      login(res.data.jwt);
     } catch (error) {
       // TODO
+      console.log(error);
     }
   };
 
@@ -60,7 +61,6 @@ export default function Login() {
           setValue={setUsername}
           placeholder={"Username"}
           autoComplete="username"
-          secure={true}
         />
         <FormInput
           value={password}
@@ -81,6 +81,7 @@ export default function Login() {
           }}
           labelStyle={{ fontSize: 18 }}
           contentStyle={{ height: "100%" }}
+          onPress={handleLogin}
           // loading={loading}
           // onPress={handleLogin}
         >

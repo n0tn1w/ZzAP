@@ -35,7 +35,8 @@
     },
     "plugins": [
       "react-native-ble-plx",
-      "expo-font"
+      "expo-font",
+      "expo-secure-store"
     ]
   }
 }
