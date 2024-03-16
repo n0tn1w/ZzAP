@@ -3,12 +3,35 @@ import { Button, Text, useTheme } from "react-native-paper";
 import MainView from "../../components/MainView";
 import { View } from "react-native";
 import { FormInput } from "../../components/FormInput";
+import useAxios from "../../utils/useAxios";
+import { StackScreenProps } from "@react-navigation/stack";
 
-export default function Register() {
+export default function Register({ navigation }: StackScreenProps<any>) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-
+  const [isLoading, setIsLoading] = useState(false);
   const { colors } = useTheme();
+
+  const axios = useAxios();
+
+  const handleRegister = async () => {
+    if (username === "" || password === "") return;
+
+    setIsLoading(true);
+    try {
+      const res = await axios.post("/register", {
+        username,
+        password,
+      });
+      console.log(res.data);
+
+      navigation.navigate("login");
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <MainView colors={colors} alignCenter>
@@ -38,7 +61,6 @@ export default function Register() {
           setValue={setUsername}
           placeholder={"Username"}
           autoComplete="username"
-          secure={true}
         />
         <FormInput
           value={password}
@@ -59,8 +81,8 @@ export default function Register() {
           }}
           labelStyle={{ fontSize: 18 }}
           contentStyle={{ height: "100%" }}
-          // loading={loading}
-          // onPress={handleLogin}
+          loading={isLoading}
+          onPress={handleRegister}
         >
           Register
         </Button>

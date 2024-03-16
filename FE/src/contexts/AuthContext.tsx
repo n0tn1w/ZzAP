@@ -1,6 +1,6 @@
 import { jwtDecode } from "jwt-decode";
 import React, { useEffect, useState } from "react";
-import { getToken, saveToken } from "../utils/secureStore";
+import { getToken, removeToken, saveToken } from "../utils/secureStore";
 
 export type User = {
   username: string;
@@ -39,9 +39,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setUser({ username });
   };
 
-  const logout = () => {
+  const logout = async () => {
     setIsAuth(false);
     setUser(null);
+    await removeToken();
   };
 
   useEffect(() => {

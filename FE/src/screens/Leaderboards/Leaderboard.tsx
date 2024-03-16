@@ -1,4 +1,3 @@
-
 import { View, Image } from "react-native";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Text, useTheme } from "react-native-paper";
@@ -7,6 +6,7 @@ import { styles } from "./Styles";
 import { FlatList, GestureHandlerRootView } from "react-native-gesture-handler";
 import useAxios from "../../utils/useAxios";
 import { useAuth } from "../../contexts/AuthContext";
+import Loading from "../../components/Loading";
 
 type LeaderbaordEntity = {
   username: string;
@@ -81,17 +81,7 @@ export default function Leaderboard() {
       : styleSheet.generalAwardImage;
 
   if (isLoading) {
-    return (
-      <View
-        style={{
-          justifyContent: "center",
-          alignItems: "center",
-          ...styleSheet.view,
-        }}
-      >
-        <ActivityIndicator animating={true} size="large" />
-      </View>
-    );
+    return <Loading colors={colors} />;
   }
 
   if (usersRanked.length === 0) {
