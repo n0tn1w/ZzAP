@@ -7,7 +7,7 @@ export const styles = (colors: MD3Colors) =>
     view: {
       flex: 1,
       backgroundColor: colors.background,
-      paddingTop: 20,
+      // paddingTop: 20,
     },
     medalionImage: {
       width: 40,
@@ -72,5 +72,18 @@ export const styles = (colors: MD3Colors) =>
 
     avatar: {
       backgroundColor: "transparent",
+    },
+    profile: {
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 10,
+    },
+    pointsRank: {
+      flexDirection: "row",
+      gap: 5,
+      alignItems: "center",
+      justifyContent: "center",
+      paddingLeft: 20,
     },
   });
