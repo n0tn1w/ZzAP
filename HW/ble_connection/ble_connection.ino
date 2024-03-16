@@ -4,6 +4,36 @@
 #include <BLEUtils.h>
 #include <ArduinoJson.h>
 
+// BLE SECTION
+BLEServer *pServer = NULL;
+
+BLECharacteristic *message_characteristic = NULL;
+BLECharacteristic *box_characteristic = NULL;
+
+String boxValue = "0";
+// See the following for generating UUIDs:
+// https://www.uuidgenerator.net/
+
+#define SERVICE_UUID "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
+
+#define MESSAGE_CHARACTERISTIC_UUID "6d68efe5-04b6-4a85-abc4-c2670b7bf7fd"
+#define BOX_CHARACTERISTIC_UUID "f27b53ad-c63d-49a0-8c0f-9f297e6cc520"
+
+
+namespace Pins {
+  const int R_15 = 15; // Not stable
+  const int START_2 = 2;
+  const int R_0 = 0; // Not stable
+  const int R_4 = 4;
+  const int R_16 = 16;
+  const int R_17 = 17;
+  const int R_5 = 5;
+  const int R_18 = 18;
+  const int R_19 = 19;
+  const int R_21 = 21;
+  const int R_22 = 22;
+  const int R_23 = 23;
+}
 
 namespace Const {
   const std::string hamilton = "hamilton";
@@ -23,21 +53,70 @@ namespace Global {
    Graph graph;
 }
 
+namespace HamiltonGame {
+  struct ActiveGraph {
+    std::vector<int> activeNodes;
+  };
+  
+  ActiveGraph activeGraph;
+  
+  void InitHamilton(std::string inputString) {
+    Serial.print("in:");
+    Serial.println(inputString.c_str());
+    DynamicJsonDocument doc(1024); // Adjust capacity as needed
+    DeserializationError error = deserializeJson(doc, inputString);
+    if (error) {
+        Serial.print("InitHamilton deserializeJson() failed: ");
+        Serial.println(error.c_str());
+        return;
+    }
+    int a = doc["inz"];
+    Serial.println("Seri");
+    Serial.println(a);
+    JsonArray dataNodeResultArray = doc["activeNodes"];
+    Serial.println(dataNodeResultArray);
+    for (JsonVariant value : dataNodeResultArray) {
+        int node1 = value.as<int>();
+        activeGraph.activeNodes.push_back(node1);
+    }
+  }
 
-// BLE SECTION
-BLEServer *pServer = NULL;
+  void CallStartFE() {
+    Serial.println("CallStartFE");
+    message_characteristic->setValue("{command: \"hamilton\"}");
+    message_characteristic->notify();  
+    digitalWrite(Pins::START_2, HIGH);
+  }
 
-BLECharacteristic *message_characteristic = NULL;
-BLECharacteristic *box_characteristic = NULL;
+  void CallEndGame() {
+    Serial.println("CallEndGame");
+    message_characteristic->setValue("{command: \"end\"}");
+    message_characteristic->notify();  
+    digitalWrite(Pins::START_2, LOW);
+  }
+  
+  void PlayHamilton() {
+     Serial.println("PlayHamilton");
+     bool allDone = true;
+     for(int el : activeGraph.activeNodes) {
+        int state = digitalRead(el);
+        Serial.println(el);
+        Serial.print("  ");
+        Serial.print(state);
 
-String boxValue = "0";
-// See the following for generating UUIDs:
-// https://www.uuidgenerator.net/
+        if(state == 0) {
+            allDone = false;
+            break;
+        }
+     }
+     if(allDone) {
+      Serial.print("Game over you win!");
 
-#define SERVICE_UUID "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
-
-#define MESSAGE_CHARACTERISTIC_UUID "6d68efe5-04b6-4a85-abc4-c2670b7bf7fd"
-#define BOX_CHARACTERISTIC_UUID "f27b53ad-c63d-49a0-8c0f-9f297e6cc520"
+      Global::command = Const::idle;
+      CallEndGame();
+     }
+  }
+}
 
 class MyServerCallbacks : public BLEServerCallbacks
 {
@@ -61,54 +140,50 @@ class CharacteristicsCallbacks : public BLECharacteristicCallbacks
     std::string valueWritten = pCharacteristic->getValue().c_str();
 
     if(valueWritten == Const::hamilton) {
+      HamiltonGame::CallStartFE();
       Global::command = Const::hamilton;
+
       Serial.print("You are playing hamilton!");
     } else if(valueWritten == Const::game2) {
       Global::command = Const::game2;
     } else {
+      Serial.println(Global::command.c_str());
       if(Global::command == Const::hamilton) {
-        Serial.print("Init hamilton!");
-        InitHamilton(valueWritten);
+
+        //Serial.print("Init hamilton!");
+        HamiltonGame::InitHamilton(valueWritten);
         Serial.print("Send acknowledge to FE");
         
       } else if(Global::command == Const::game2) {
         
-      }
+      } 
     }
-  }
-
-  void InitHamilton(std::string inputString) {
-    DynamicJsonDocument doc(1024); // Adjust capacity as needed
-    DeserializationError error = deserializeJson(doc, inputString);
-    if (error) {
-        Serial.print("InitHamilton deserializeJson() failed: ");
-        Serial.println(error.c_str());
-        return;
-    }
-
-    Global::graph;
-    Global::graph.edgesCount = doc["edgesCount"];
-    JsonArray dataEdgesArray = doc["edges"];
-    for (JsonVariant value : dataEdgesArray) {
-        int node1 = value[0];
-        int node2 = value[1];
-        Global::graph.edges.push_back({node1, node2});
-    }
-    Global::graph.nodesCount = doc["nodesCount"];
-    JsonArray dataNodeResultArray = doc["nodeResult"];
-    for (JsonVariant value : dataNodeResultArray) {
-        int node1 = value[0];
-        Global::graph.nodesResult.push_back(node1);
-    }
-
   }
 };
+
+void InitRightSidePins() {
+  pinMode(Pins::R_15, INPUT); // Set the diode pin as an output
+  pinMode(Pins::START_2, OUTPUT); // Set the diode pin as an output
+  pinMode(Pins::R_0, INPUT); // Set the diode pin as an output
+  pinMode(Pins::R_4, INPUT); // Set the diode pin as an output
+  pinMode(Pins::R_16, INPUT); // Set the diode pin as an output
+  pinMode(Pins::R_17, INPUT); // Set the diode pin as an output
+  pinMode(Pins::R_5, INPUT); // Set the diode pin as an output
+  pinMode(Pins::R_18, INPUT); // Set the diode pin as an output
+  pinMode(Pins::R_19, INPUT); // Set the diode pin as an output
+  pinMode(Pins::R_21, INPUT); // Set the diode pin as an output
+  //pinMode(Pins::R_22, INPUT); // Set the diode pin as an output
+  //pinMode(Pins::R_23, INPUT); // Set the diode pin as an output
+}
 
 void setup()
 {
   Serial.begin(115200);
 
-    // Initialize BLE
+  //Init Pins
+  InitRightSidePins();
+
+  // Initialize BLE
   BLEDevice::init("ESP32");
 
   // Get the Bluetooth MAC address
@@ -148,21 +223,21 @@ void setup()
   message_characteristic->setValue("Message one");
   message_characteristic->setCallbacks(new CharacteristicsCallbacks());
 
-  box_characteristic->setValue("0");
+//  box_characteristic->setValue("0");
   box_characteristic->setCallbacks(new CharacteristicsCallbacks());
 
   Serial.println("Waiting for a client connection to notify...");
+
+  Global::command = Const::idle; //!!!!!!
 }
 
 void loop()
 {
-  message_characteristic->setValue("Message one");
-  message_characteristic->notify();
+  if(Global::command == Const::idle) {
+    delay(1000);  
+  } else if(Global::command == Const::hamilton) {
+    HamiltonGame::PlayHamilton();
+  }
 
-  delay(1000);
-
-  message_characteristic->setValue("Message Two");
-  message_characteristic->notify();
-
-  delay(1000);
+    
 }
