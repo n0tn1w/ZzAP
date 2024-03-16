@@ -244,8 +244,10 @@ export default function Connect() {
 
                 console.log('Connection established');
                 sendMessageValue("{command:\"hamilton\"}");
+                sendMessageValue("{command:\"startAc\"}");
 
-                const numArr = new ActiveNotes([1, 2, 3]);
+                const numArr = new ActiveNotes([4, 16, 17, 5, 18, 19, 21]);
+                //sendMessageValue("{command:\"stopAc\"}");
                 sendObjectValue(JSON.stringify(numArr));
             });
     }
