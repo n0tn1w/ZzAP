@@ -1,21 +1,31 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import Home from "../screens/Home";
 import Profile from "../screens/Profile";
-import { BottomNavigation } from "react-native-paper";
-import IconFA from "react-native-vector-icons/FontAwesome5";
+import { BottomNavigation, useTheme } from "react-native-paper";
+import LeaderboardIcon from "react-native-vector-icons/MaterialIcons";
 import IconFeather from "react-native-vector-icons/Feather";
 import { CommonActions } from "@react-navigation/native";
 import Play from "../screens/Play";
+import Leaderboard from "../screens/Leaderboard";
 
 export type AuthStackNavigationProps = {
-  home: undefined;
   profile: undefined;
   play: undefined;
+  leaderboard: undefined;
 };
 
 const Tabs = createBottomTabNavigator<AuthStackNavigationProps>();
 
 export default function AuthNavigationStack() {
+  const { colors } = useTheme();
+  const generalOptions = {
+    tabBarShowLabel: true,
+    headerStyle: {
+      borderWidth: 0,
+      shadowOpacity: 0,
+    },
+    headerTitleAlign: "left",
+  };
+
   return (
     <Tabs.Navigator
       id="TabsID"
@@ -61,35 +71,41 @@ export default function AuthNavigationStack() {
       )}
     >
       <Tabs.Screen
-        name="home"
-        component={Home}
+        name="play"
+        component={Play}
+        // @ts-ignore
         options={{
-          title: "Home",
+          title: "Play",
           tabBarIcon: ({ color }) => (
-            <IconFeather name="home" color={color} size={23} />
+            <IconFeather name="play-circle" color={color} size={23} />
           ),
+          ...generalOptions,
+        }}
+      />
+
+      <Tabs.Screen
+        name="leaderboard"
+        component={Leaderboard}
+        // @ts-ignore
+        options={{
+          title: "Leaderboard",
+          tabBarIcon: ({ color }) => (
+            <LeaderboardIcon name="leaderboard" color={color} size={23} />
+          ),
+          ...generalOptions,
         }}
       />
 
       <Tabs.Screen
         name="profile"
         component={Profile}
+        // @ts-ignore
         options={{
           title: "Profile",
           tabBarIcon: ({ color }) => (
             <IconFeather name="user" color={color} size={23} />
           ),
-        }}
-      />
-
-      <Tabs.Screen
-        name="play"
-        component={Play}
-        options={{
-          title: "Play",
-          tabBarIcon: ({ color }) => (
-            <IconFeather name="play-circle" color={color} size={23} />
-          ),
+          ...generalOptions,
         }}
       />
     </Tabs.Navigator>

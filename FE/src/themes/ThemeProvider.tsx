@@ -21,7 +21,7 @@ export const ColorsSchemeProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const paperTheme = LightTheme;
+  const paperTheme = DarkTheme;
 
   return (
     <PaperProvider theme={paperTheme}>
