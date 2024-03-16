@@ -38,69 +38,93 @@ export default function Leaderboard() {
     },
     {
       key: 4,
-      name: "Alex",
-      time: 305,
-      score: 3.7,
+      name: "Emily",
+      time: 421,
+      score: 22,
     },
     {
       key: 5,
-      name: "Mason",
-      time: 305,
-      score: 3.7,
+      name: "Sophia",
+      time: 289,
+      score: 18,
     },
     {
       key: 6,
-      name: "Mason",
-      time: 305,
-      score: 3.7,
+      name: "Daniel",
+      time: 198,
+      score: 11,
     },
     {
       key: 7,
-      name: "Mason",
-      time: 305,
-      score: 3.7,
+      name: "Emma",
+      time: 333,
+      score: 15,
     },
     {
       key: 8,
-      name: "Mason",
-      time: 305,
-      score: 3.7,
+      name: "Liam",
+      time: 176,
+      score: 9,
     },
     {
       key: 9,
-      name: "Mason",
-      time: 305,
-      score: 3.7,
+      name: "Olivia",
+      time: 402,
+      score: 20,
     },
     {
       key: 10,
-      name: "Mason",
-      time: 305,
-      score: 3.7,
+      name: "Michael",
+      time: 312,
+      score: 17,
     },
     {
       key: 11,
-      name: "Mason",
-      time: 305,
-      score: 3.7,
+      name: "Ava",
+      time: 245,
+      score: 14,
     },
     {
       key: 12,
-      name: "Mason",
-      time: 305,
-      score: 3.7,
+      name: "William",
+      time: 389,
+      score: 21,
     },
     {
       key: 13,
-      name: "Mason",
-      time: 305,
-      score: 3.7,
+      name: "Ethan",
+      time: 174,
+      score: 10,
     },
     {
       key: 14,
-      name: "AAAAA",
-      time: 305,
-      score: 3.7,
+      name: "Isabella",
+      time: 376,
+      score: 19,
+    },
+    {
+      key: 15,
+      name: "James",
+      time: 298,
+      score: 16,
+    },
+    {
+      key: 16,
+      name: "Mia",
+      time: 211,
+      score: 12,
+    },
+    {
+      key: 17,
+      name: "Alexander",
+      time: 344,
+      score: 18,
+    },
+    {
+      key: 18,
+      name: "Charlotte",
+      time: 186,
+      score: 11,
     },
   ]);
 
@@ -114,7 +138,7 @@ export default function Leaderboard() {
   const styleSheet = styles(colors);
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.primaryContainer }}>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
       <View style={styleSheet.top3Container}>
         <View
           onTouchStart={() => console.log("touch 2nd")}
@@ -128,7 +152,12 @@ export default function Leaderboard() {
             source={require("../../assets/secondPlaceLeaderBoard.png")}
             style={styleSheet.medalionImage}
           />
-          <Avatar.Text size={64} label="1" style={styleSheet.avatarContainer} />
+          <Avatar.Text size={64} label="2" style={styleSheet.avatarContainer} />
+          {items[1] == null ? (
+            <Text>No Data</Text>
+          ) : (
+            <Text>{items[1].name}</Text>
+          )}
         </View>
         <View
           onTouchStart={() => console.log("touch 1st")}
@@ -139,6 +168,11 @@ export default function Leaderboard() {
             style={styleSheet.medalionImage}
           />
           <Avatar.Text size={76} label="1" style={styleSheet.avatarContainer} />
+          {items[0] == null ? (
+            <Text>No Data</Text>
+          ) : (
+            <Text>{items[0].name}</Text>
+          )}
         </View>
         <View
           onTouchStart={() => console.log("touch 3rd")}
@@ -152,7 +186,12 @@ export default function Leaderboard() {
             source={require("../../assets/thirdPlaceLeaderBoard.png")}
             style={styleSheet.medalionImage}
           />
-          <Avatar.Text size={64} label="1" style={styleSheet.avatarContainer} />
+          <Avatar.Text size={64} label="3" style={styleSheet.avatarContainer} />
+          {items[2] == null ? (
+            <Text>No Data</Text>
+          ) : (
+            <Text>{items[2].name}</Text>
+          )}
         </View>
       </View>
       <View>
