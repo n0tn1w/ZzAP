@@ -17,10 +17,10 @@ const SERVICE_UUID = '4fafc201-1fb5-459e-8fcc-c5c9c331914b';
 const MESSAGE_UUID = '6d68efe5-04b6-4a85-abc4-c2670b7bf7fd';
 const OBJECT_UUID = 'f27b53ad-c63d-49a0-8c0f-9f297e6cc520';
 
-class ActiveNotes {
-    public activeNotes: number[];
+class ActiveNodes {
+    public activeNodes: number[];
     constructor(numbers: number[]) {
-        this.activeNotes = numbers;
+        this.activeNodes = numbers;
     }
 }
 
@@ -90,7 +90,7 @@ export default function Connect() {
 
     // Scans availbale BLT Devices and then call connectDevice
     async function scanDevices() {
-        const numArr = new ActiveNotes([1, 2, 3]);
+        const numArr = new ActiveNodes([1, 2, 3]);
         console.log(JSON.stringify(numArr));
         requestBluetoothPermission().then(answer => {//check answer
             if (answer == true) {
@@ -243,10 +243,13 @@ export default function Connect() {
                 */
 
                 console.log('Connection established');
-                sendMessageValue("{command:\"hamilton\"}");
-                sendMessageValue("{command:\"startAc\"}");
+                //sendMessageValue("{command:\"hamilton\"}");
+                sendMessageValue("hamilton");
+                sendMessageValue("{\"inz\":5}");
 
-                const numArr = new ActiveNotes([4, 16, 17, 5, 18, 19, 21]);
+                //sendMessageValue("{command:\"startAc\"}");
+
+                const numArr = new ActiveNodes([4, 16, 17, 5, 18, 19, 21]);
                 //sendMessageValue("{command:\"stopAc\"}");
                 sendObjectValue(JSON.stringify(numArr));
             });
