@@ -5,9 +5,9 @@
 **Contributors:**
 
 *  Vili Kastreva
-*  Alex Gurov
+*  Alexander Gurov
 *  Dani Manchevski
-*  Alex Asenov
+*  Alexander Asenov
 *  Doncho Ivanov
 *  Pavel Damyanov
   
