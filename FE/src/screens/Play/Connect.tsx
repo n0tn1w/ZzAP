@@ -334,6 +334,22 @@ export default function Connect({ navigation }: StackScreenProps<any>) {
 
 
     const PlayingComponent: React.FC = () => {
+        const [time, _] = useState(finalTime.valueOf() - timeBegin.valueOf());
+        const [passed, setPassed] = useState(true);
+        const axios = useAxios(true);
+
+        const lId = level1.title == "Level 1" ? 0 : 1;
+
+        const handleTimerEnd = async () => {
+            try {
+                const res = await axios.post(`levels/${lId}`, {
+                    time: time,
+                    passed: passed,
+                });
+            } catch (error) {
+                console.log(error);
+            }
+        };
         return (<View style={{
             flex: 1,
             gap: 20,
@@ -354,7 +370,14 @@ export default function Connect({ navigation }: StackScreenProps<any>) {
                     reset={false}
                     options={{ container: { backgroundColor: colors.primaryContainer, borderRadius: 10, padding: 10 }, text: { fontSize: 30, color: colors.onPrimary } }}
                 />
-                <Button mode='contained' onPress={() => setIsFinished(true)}>
+                <Button mode='contained'
+                    onPress={
+                        () => {
+                            setIsFinished(true);
+                            setPassed(false);
+                            handleTimerEnd();
+                        }
+                    }>
                     Cancel
                 </Button>
 
@@ -370,9 +393,10 @@ export default function Connect({ navigation }: StackScreenProps<any>) {
                         }}
                         disabled={false}
                     >Go back to Levels</Button>
-                </View>}
+                </View>
+            }
 
-        </View>)
+        </View >)
     }
 
     return (
