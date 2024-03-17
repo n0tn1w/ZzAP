@@ -1,20 +1,21 @@
 import { StackScreenProps } from '@react-navigation/stack';
-import React, { Component } from 'react'
+import React, { Component, useEffect, useRef } from 'react'
 import { useState } from 'react'
 import { Alert, Platform, View } from 'react-native'
 import { PermissionsAndroid } from 'react-native'
 import base64 from 'react-native-base64';
 import { BleManager, Device, State } from 'react-native-ble-plx';
 import { useTheme, Button, ActivityIndicator, Icon, Text } from 'react-native-paper';
-
-//import Toast from 'react-native-toast-message'
+import StopwatchTimer, {
+    StopwatchTimerMethods,
+} from 'react-native-animated-stopwatch-timer';
 
 export const BLTManager = new BleManager()
 
-const SERVICE_UUID = '4fafc201-1fb5-459e-8fcc-c5c9c331914b';
+const SERVICE_UUID: string = '4fafc201-1fb5-459e-8fcc-c5c9c331914b';
 
-const MESSAGE_UUID = '6d68efe5-04b6-4a85-abc4-c2670b7bf7fd';
-const OBJECT_UUID = 'f27b53ad-c63d-49a0-8c0f-9f297e6cc520';
+const MESSAGE_UUID: string = '6d68efe5-04b6-4a85-abc4-c2670b7bf7fd';
+const OBJECT_UUID: string = 'f27b53ad-c63d-49a0-8c0f-9f297e6cc520';
 
 export type LevelData = {
     activeNodes: number[];
@@ -31,14 +32,42 @@ export type Level = {
 export default function Connect({ navigation }: StackScreenProps<any>) {
     const { colors } = useTheme();
 
-    const [isConnected, setIsConnected] = useState(false);
-    const [playing, setPlaying] = useState(false);
-    const [connecting, setConnecting] = useState(false);
+
+    const [isConnected, setIsConnected] = useState<boolean>(false);
+    const [playing, setPlaying] = useState<boolean>(false);
+    const [connecting, setConnecting] = useState<boolean>(false);
+    const [completed, setCompleted] = useState<boolean>(false);
+    const [isFinished, setIsFinished] = useState<boolean>(false);
 
     const [connectedDevice, setConnectedDevice] = useState<Device>();
-    const [message, setMessage] = useState('Nothing Yet');
+    const [message, setMessage] = useState<String>('Nothing Yet');
 
-    const level1: Level = { title: "Level 1", description: "This level is nice level, very nice, very math. Gg go next. Easy win for jidjkadjiq. dominos. i must scream and i have no mouth", icon: "graphql", data: { activeNodes: [4, 16, 17], edges: [[4, 16], [16, 17]] } };
+    const [timeBegin, setTimeBegin] = useState<Number>(Date.now());
+    const [finalTime, setFinalTime] = useState<Number>(Date.now());
+
+    const stopwatchTimerRef = useRef<StopwatchTimerMethods>(null);
+
+    // Methods to control the stopwatch
+    function play() {
+        stopwatchTimerRef.current?.play();
+    }
+
+    function pause() {
+        stopwatchTimerRef.current?.pause();
+    }
+
+    function reset() {
+        stopwatchTimerRef.current?.reset();
+    }
+
+    const level1: Level = {
+        title: "Level 1",
+        description: "This level is nice level, very nice, very math. Gg go next. Easy win for jidjkadjiq. dominos. i must scream and i have no mouth",
+        icon: "graphql",
+        data: { activeNodes: [4, 19, 13, 12, 25], edges: [[4, 16], [16, 17]] }
+    };
+
+    console.log(JSON.stringify(level1.data));
 
     const subscription = BLTManager.onStateChange((state) => {  // check if device bluetooth is powered on, if not alert to enable it!
         if (state === 'PoweredOff') {
@@ -153,6 +182,10 @@ export default function Connect({ navigation }: StackScreenProps<any>) {
         });
     }
 
+    function getTime(date: Date) {
+        return date.getMinutes() + ":" + date.getSeconds() + ":" + date.getMilliseconds();;
+    }
+
     //Connect the device and start monitoring characteristics
     async function connectDevice(device: Device) {
         console.log('connecting to Device:', device.name);
@@ -186,20 +219,134 @@ export default function Connect({ navigation }: StackScreenProps<any>) {
                                 'Message update received: ',
                                 base64.decode(characteristic?.value),
                             );
+                            if (message == "{\"command\":\"end\"}") {
+                                setIsFinished(true);
+                                setCompleted(true);
+                                setFinalTime(Date.now());
+                            }
                         }
                     },
                     'messagetransaction',
                 );
 
                 console.log('Connection established');
+                setTimeout(
+                    () => {
+                        sendMessageValue("hamilton");
+                    }, 350
+                );
+                setTimeout(
+                    () => {
+                        sendObjectValue(JSON.stringify(level1.data));
+                    }, 350
+                );
                 //sendMessageValue("{command:\"hamilton\"}");
-                sendMessageValue("hamilton");
                 //sendMessageValue("{\"inz\":5}");
 
                 //sendMessageValue("{command:\"startAc\"}");
                 //sendMessageValue("{command:\"stopAc\"}");
-                sendObjectValue(JSON.stringify(level1.data));
             });
+    }
+
+    const ConnectComponent: React.FC = () => {
+        return (<View>
+            <Button
+                mode="contained"
+                onPress={() => {
+                    scanDevices();
+                }}
+                disabled={false}
+            >
+                Connect
+            </Button></View>)
+    }
+
+    const ConnectingComponent: React.FC = () => {
+        return (<View style={{ gap: 5 }}>
+            <ActivityIndicator animating={true} />
+            <Button
+                mode="contained"
+                onPress={() => {
+                    scanDevices();
+                }}
+                disabled={false}
+            >
+                Reset scan
+            </Button>
+            <Button
+                mode="contained"
+                onPress={() => {
+                    setIsConnected(true);
+                    setConnecting(false);
+                    BLTManager.stopDeviceScan();
+                    console.log("faked connect");
+                }}
+                disabled={false}
+            >
+                Fake connect
+            </Button>
+        </View>)
+    }
+
+    const ConnectedComponent: React.FC = () => {
+        return (<View style={{ gap: 150 }}>
+            <Icon source="check-circle" size={200} color={colors.primary}></Icon>
+            <Button
+                mode="outlined"
+                onPress={() => {
+                    disconnectDevice();
+                }}
+                disabled={false}
+            >
+                Disconnect
+            </Button>
+            <Button
+                mode="contained"
+                onPress={() => {
+                    setPlaying(true);
+                    setTimeBegin(Date.now());
+                }}
+                disabled={false}
+            >
+                Start Level
+            </Button>
+        </View>)
+    }
+
+    const PlayingComponent: React.FC = () => {
+        return (<View style={{
+            flex: 1,
+            gap: 20,
+            paddingVertical: 26,
+            paddingHorizontal: 26,
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: colors.background,
+        }}>
+            <Text variant="titleLarge">{level1.title}</Text>
+            <Text variant="bodyLarge">{level1.description}</Text>
+            <Icon source={level1.icon} size={200} color={colors.primary}></Icon>
+            {!isFinished ? <View style={{ gap: 20 }}>
+
+                <Button mode='contained' onPress={() => setIsFinished(true)}>
+                    Cancel
+                </Button>
+            </View> :
+                <View style={{ gap: 20 }}>
+                    <Text variant="titleLarge">{completed ? ("Level Completed in " + getTime(new Date(finalTime.valueOf() - timeBegin.valueOf()))) : ("Level not completed")}</Text>
+                    <Button
+                        mode="contained"
+                        onPress={() => {
+                            setPlaying(false);
+                            setIsFinished(false);
+                            disconnectDevice();
+                            navigation.navigate('levels');
+                        }}
+                        disabled={false}
+                    >Go back to Levels</Button>
+                </View>}
+
+        </View>)
     }
 
     return (
@@ -212,76 +359,11 @@ export default function Connect({ navigation }: StackScreenProps<any>) {
                 backgroundColor: colors.background,
             }}>
 
-            {!playing ? (!isConnected ? (
-                connecting ? (<View style={{ gap: 5 }}>
-                    <ActivityIndicator animating={true} />
-                    <Button
-                        mode="contained"
-                        onPress={() => {
-                            scanDevices();
-                        }}
-                        disabled={false}
-                    >
-                        Reset scan
-                    </Button>
-                    <Button
-                        mode="contained"
-                        onPress={() => {
-                            setIsConnected(true);
-                            BLTManager.stopDeviceScan();
-                            console.log("faked connect");
-                        }}
-                        disabled={false}
-                    >
-                        Fake connect
-                    </Button>
-                </View>) : (<View>
-                    <Button
-                        mode="contained"
-                        onPress={() => {
-                            scanDevices();
-                        }}
-                        disabled={false}
-                    >
-                        Connect
-                    </Button></View>)
-            ) : (
-                <View style={{ gap: 150 }}>
-                    <Icon source="check-circle" size={200} color={colors.primary}></Icon>
-                    <Button
-                        mode="outlined"
-                        onPress={() => {
-                            disconnectDevice();
-                        }}
-                        disabled={false}
-                    >
-                        Disconnect
-                    </Button>
-                    <Button
-                        mode="contained"
-                        onPress={() => {
-                            setPlaying(true);
-                        }}
-                        disabled={false}
-                    >
-                        Start Level
-                    </Button>
-                </View>
-            )) : (
-                <View style={{
-                    flex: 1,
-                    gap: 20,
-                    paddingVertical: 26,
-                    paddingHorizontal: 26,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    backgroundColor: colors.background,
-                }}>
-                    <Text variant="titleLarge">{level1.title}</Text>
-                    <Text variant="bodyLarge">{level1.description}</Text>
-                    <Icon source={level1.icon} size={200} color={colors.primary}></Icon>
-                </View>
-            )
+            {!playing ?
+                (!isConnected ? (
+                    connecting ? <ConnectingComponent /> : <ConnectComponent />
+                ) : <ConnectedComponent />)
+                : <PlayingComponent />
             }
             <Text style={{ color: colors.onBackground }}>{message}</Text>
         </View >
@@ -303,7 +385,3 @@ function BoolToString(input: boolean) {
         return '0';
     }
 }
-
-
-
-

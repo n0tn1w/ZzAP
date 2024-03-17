@@ -28,7 +28,7 @@ export default function NavigationStack() {
         },
       }}
     >
-      <PublicStack.Screen name="Levels" component={Levels} />
+      <PublicStack.Screen name="levels" component={Levels} />
       <PublicStack.Screen name="connect" component={Connect} />
       <PublicStack.Screen name="description" component={LevelDescription} />
       <PublicStack.Screen
