@@ -1,9 +1,11 @@
-import { View } from "react-native";
+import { View, Image } from "react-native";
 import { Button, Text, useTheme } from "react-native-paper";
 import { StackScreenProps } from "@react-navigation/stack";
 
 export default function WelcomeScreen({ navigation }: StackScreenProps<any>) {
   const { colors } = useTheme();
+
+  const logoPath = require("../../../assets/logo.png");
 
   return (
     <View
@@ -16,7 +18,7 @@ export default function WelcomeScreen({ navigation }: StackScreenProps<any>) {
       }}
     >
       <View style={{ marginVertical: 24 }}>
-        <Text variant="displaySmall">XOR Hacakton</Text>
+        <Image source={logoPath} style={{ width: 300, height: 150 }} />
       </View>
 
       <Button
