@@ -6,8 +6,9 @@ import { PermissionsAndroid } from 'react-native'
 import base64 from 'react-native-base64';
 import { BleManager, Device, State } from 'react-native-ble-plx';
 import { useTheme, Button, ActivityIndicator, Icon, Text } from 'react-native-paper';
-import moment from 'moment';
-//import Toast from 'react-native-toast-message'
+import StopwatchTimer, {
+    StopwatchTimerMethods,
+} from 'react-native-animated-stopwatch-timer';
 
 export const BLTManager = new BleManager()
 
@@ -35,8 +36,8 @@ export default function Connect({ navigation }: StackScreenProps<any>) {
     const [isConnected, setIsConnected] = useState<boolean>(false);
     const [playing, setPlaying] = useState<boolean>(false);
     const [connecting, setConnecting] = useState<boolean>(false);
+    const [completed, setCompleted] = useState<boolean>(false);
     const [isFinished, setIsFinished] = useState<boolean>(false);
-
 
     const [connectedDevice, setConnectedDevice] = useState<Device>();
     const [message, setMessage] = useState<String>('Nothing Yet');
@@ -44,7 +45,29 @@ export default function Connect({ navigation }: StackScreenProps<any>) {
     const [timeBegin, setTimeBegin] = useState<Number>(Date.now());
     const [finalTime, setFinalTime] = useState<Number>(Date.now());
 
-    const level1: Level = { title: "Level 1", description: "This level is nice level, very nice, very math. Gg go next. Easy win for jidjkadjiq. dominos. i must scream and i have no mouth", icon: "graphql", data: { activeNodes: [4, 25, 33, 23, 19, 21, 27, 12, 18, 13], edges: [[4, 16], [16, 17]] } };
+    const stopwatchTimerRef = useRef<StopwatchTimerMethods>(null);
+
+    // Methods to control the stopwatch
+    function play() {
+        stopwatchTimerRef.current?.play();
+    }
+
+    function pause() {
+        stopwatchTimerRef.current?.pause();
+    }
+
+    function reset() {
+        stopwatchTimerRef.current?.reset();
+    }
+
+    const level1: Level = {
+        title: "Level 1",
+        description: "This level is nice level, very nice, very math. Gg go next. Easy win for jidjkadjiq. dominos. i must scream and i have no mouth",
+        icon: "graphql",
+        data: { activeNodes: [4, 19, 13, 12, 25], edges: [[4, 16], [16, 17]] }
+    };
+
+    console.log(JSON.stringify(level1.data));
 
     const subscription = BLTManager.onStateChange((state) => {  // check if device bluetooth is powered on, if not alert to enable it!
         if (state === 'PoweredOff') {
@@ -198,6 +221,7 @@ export default function Connect({ navigation }: StackScreenProps<any>) {
                             );
                             if (message == "{\"command\":\"end\"}") {
                                 setIsFinished(true);
+                                setCompleted(true);
                                 setFinalTime(Date.now());
                             }
                         }
@@ -206,13 +230,21 @@ export default function Connect({ navigation }: StackScreenProps<any>) {
                 );
 
                 console.log('Connection established');
+                setTimeout(
+                    () => {
+                        sendMessageValue("hamilton");
+                    }, 350
+                );
+                setTimeout(
+                    () => {
+                        sendObjectValue(JSON.stringify(level1.data));
+                    }, 350
+                );
                 //sendMessageValue("{command:\"hamilton\"}");
-                sendMessageValue("hamilton");
                 //sendMessageValue("{\"inz\":5}");
 
                 //sendMessageValue("{command:\"startAc\"}");
                 //sendMessageValue("{command:\"stopAc\"}");
-                sendObjectValue(JSON.stringify(level1.data));
             });
     }
 
@@ -294,34 +326,28 @@ export default function Connect({ navigation }: StackScreenProps<any>) {
             <Text variant="titleLarge">{level1.title}</Text>
             <Text variant="bodyLarge">{level1.description}</Text>
             <Icon source={level1.icon} size={200} color={colors.primary}></Icon>
-            {!isFinished ? <TimerComponent /> : <Text variant="titleLarge">Level Completed in {getTime(new Date(finalTime.valueOf() - timeBegin.valueOf()))}</Text>}
+            {!isFinished ? <View style={{ gap: 20 }}>
+
+                <Button mode='contained' onPress={() => setIsFinished(true)}>
+                    Cancel
+                </Button>
+            </View> :
+                <View style={{ gap: 20 }}>
+                    <Text variant="titleLarge">{completed ? ("Level Completed in " + getTime(new Date(finalTime.valueOf() - timeBegin.valueOf()))) : ("Level not completed")}</Text>
+                    <Button
+                        mode="contained"
+                        onPress={() => {
+                            setPlaying(false);
+                            setIsFinished(false);
+                            disconnectDevice();
+                            navigation.navigate('levels');
+                        }}
+                        disabled={false}
+                    >Go back to Levels</Button>
+                </View>}
 
         </View>)
     }
-
-    const TimerComponent: React.FC = () => {
-        const [elapsedTime, setElapsedTime] = useState(0);
-
-        const startTime: number = Date.now() - elapsedTime;
-        setInterval(() => {
-            setElapsedTime(Date.now() - startTime);
-        }, 1000);
-
-        const minutes = Math.floor(elapsedTime / 60000);
-        const seconds = Math.floor((elapsedTime % 60000) / 1000);
-
-        const formattedTime = `${minutes
-            .toString()
-            .padStart(2, '0')}:${seconds
-                .toString()
-                .padStart(2, '0')}`;
-
-        return (
-            <Button mode='elevated' >
-                Timer: {formattedTime}
-            </Button>
-        );
-    };
 
     return (
         <View
