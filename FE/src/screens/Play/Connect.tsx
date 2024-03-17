@@ -314,7 +314,7 @@ export default function Connect({ navigation }: StackScreenProps<any>) {
         >
           Reset scan
         </Button>
-        <Button
+        {/* <Button
           mode="contained"
           onPress={() => {
             setIsConnected(true);
@@ -325,7 +325,7 @@ export default function Connect({ navigation }: StackScreenProps<any>) {
           disabled={false}
         >
           Fake connect
-        </Button>
+        </Button> */}
       </View>
     );
   };
@@ -452,7 +452,7 @@ export default function Connect({ navigation }: StackScreenProps<any>) {
       ) : (
         <PlayingComponent />
       )}
-      <Text style={{ color: colors.onBackground }}>{message}</Text>
+      {/* <Text style={{ color: colors.onBackground }}>{message}</Text> */}
     </View>
   );
 }
