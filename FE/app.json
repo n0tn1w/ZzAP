@@ -37,6 +37,11 @@
       "react-native-ble-plx",
       "expo-font",
       "expo-secure-store"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "7212732a-f48d-44c6-8272-7ffc6a338c18"
+      }
+    }
   }
 }
