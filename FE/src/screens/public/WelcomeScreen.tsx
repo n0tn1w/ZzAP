@@ -17,7 +17,7 @@ export default function WelcomeScreen({ navigation }: StackScreenProps<any>) {
         backgroundColor: colors.background,
       }}
     >
-      <View style={{ marginVertical: 24 }}>
+      <View style={{ paddingLeft: 35, marginVertical: 24 }}>
         <Image source={logoPath} style={{ width: 300, height: 150 }} />
       </View>
 
