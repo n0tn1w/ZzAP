@@ -6,9 +6,7 @@ import { PermissionsAndroid } from 'react-native'
 import base64 from 'react-native-base64';
 import { BleManager, Device, State } from 'react-native-ble-plx';
 import { useTheme, Button, ActivityIndicator, Icon, Text } from 'react-native-paper';
-import StopwatchTimer, {
-    StopwatchTimerMethods,
-} from 'react-native-animated-stopwatch-timer';
+import { Stopwatch, Timer } from 'react-native-stopwatch-timer';
 
 export const BLTManager = new BleManager()
 
@@ -44,30 +42,16 @@ export default function Connect({ navigation }: StackScreenProps<any>) {
 
     const [timeBegin, setTimeBegin] = useState<Number>(Date.now());
     const [finalTime, setFinalTime] = useState<Number>(Date.now());
-
-    const stopwatchTimerRef = useRef<StopwatchTimerMethods>(null);
-
-    // Methods to control the stopwatch
-    function play() {
-        stopwatchTimerRef.current?.play();
-    }
-
-    function pause() {
-        stopwatchTimerRef.current?.pause();
-    }
-
-    function reset() {
-        stopwatchTimerRef.current?.reset();
-    }
+    const [result, setResult] = useState<Number>(0);
 
     const level1: Level = {
         title: "Level 1",
         description: "This level is nice level, very nice, very math. Gg go next. Easy win for jidjkadjiq. dominos. i must scream and i have no mouth",
         icon: "graphql",
-        data: { activeNodes: [4, 19, 13, 12, 25], edges: [[4, 16], [16, 17]] }
-    };
+        data: { activeNodes: [16, 19, 13, 12, 25], edges: [[4, 16], [16, 17]] }
+        //data: { activeNodes: [16, 19, 13, 12, 25], edges: [[4, 16], [16, 17]] }
 
-    console.log(JSON.stringify(level1.data));
+    };
 
     const subscription = BLTManager.onStateChange((state) => {  // check if device bluetooth is powered on, if not alert to enable it!
         if (state === 'PoweredOff') {
@@ -140,6 +124,7 @@ export default function Connect({ navigation }: StackScreenProps<any>) {
     }
 
     async function disconnectDevice() {
+        sendMessageValue("disconnect");
         console.log('Disconnecting start');
         BLTManager.stopDeviceScan();
 
@@ -154,8 +139,10 @@ export default function Connect({ navigation }: StackScreenProps<any>) {
             }
             console.log('DC completed');
         }
+
         setIsConnected(false);
         setConnecting(false);
+
     }
 
     //Function to send object data to ESP32
@@ -183,7 +170,11 @@ export default function Connect({ navigation }: StackScreenProps<any>) {
     }
 
     function getTime(date: Date) {
-        return date.getMinutes() + ":" + date.getSeconds() + ":" + date.getMilliseconds();;
+        return `${date.getMinutes() < 10 ? '0' : ''}${date.getMinutes()}:${date.getSeconds() < 10 ? '0' : ''}${date.getSeconds()}.${date.getMilliseconds() < 100 ? '0' : ''}${date.getMilliseconds() < 10 ? '0' : ''}${date.getMilliseconds()}`
+    }
+
+    function getTimeFromStopwatch(time) {
+
     }
 
     //Connect the device and start monitoring characteristics
@@ -219,10 +210,12 @@ export default function Connect({ navigation }: StackScreenProps<any>) {
                                 'Message update received: ',
                                 base64.decode(characteristic?.value),
                             );
-                            if (message == "{\"command\":\"end\"}") {
+                            if (message.trim() == "end" || base64.decode(characteristic?.value).trim() == "end" || message.trim() === "end" || base64.decode(characteristic?.value).trim() === "end") {
                                 setIsFinished(true);
                                 setCompleted(true);
+                                console.log('Level completed');
                                 setFinalTime(Date.now());
+                                disconnectDevice();
                             }
                         }
                     },
@@ -230,16 +223,9 @@ export default function Connect({ navigation }: StackScreenProps<any>) {
                 );
 
                 console.log('Connection established');
-                setTimeout(
-                    () => {
-                        sendMessageValue("hamilton");
-                    }, 350
-                );
-                setTimeout(
-                    () => {
-                        sendObjectValue(JSON.stringify(level1.data));
-                    }, 350
-                );
+
+                sendMessageValue("hamilton");
+                sendObjectValue(JSON.stringify(level1.data));
                 //sendMessageValue("{command:\"hamilton\"}");
                 //sendMessageValue("{\"inz\":5}");
 
@@ -305,6 +291,8 @@ export default function Connect({ navigation }: StackScreenProps<any>) {
                 onPress={() => {
                     setPlaying(true);
                     setTimeBegin(Date.now());
+                    sendMessageValue("hamilton");
+                    sendObjectValue(JSON.stringify(level1.data));
                 }}
                 disabled={false}
             >
@@ -312,6 +300,7 @@ export default function Connect({ navigation }: StackScreenProps<any>) {
             </Button>
         </View>)
     }
+
 
     const PlayingComponent: React.FC = () => {
         return (<View style={{
@@ -326,11 +315,18 @@ export default function Connect({ navigation }: StackScreenProps<any>) {
             <Text variant="titleLarge">{level1.title}</Text>
             <Text variant="bodyLarge">{level1.description}</Text>
             <Icon source={level1.icon} size={200} color={colors.primary}></Icon>
-            {!isFinished ? <View style={{ gap: 20 }}>
-
+            {!isFinished ? <View style={{ gap: 20, alignItems: 'center', }}>
+                <Stopwatch
+                    laps
+                    msecs
+                    start={true}
+                    reset={false}
+                    options={{ container: { backgroundColor: colors.primaryContainer, borderRadius: 10, padding: 10 }, text: { fontSize: 30, color: colors.onPrimary } }}
+                />
                 <Button mode='contained' onPress={() => setIsFinished(true)}>
                     Cancel
                 </Button>
+
             </View> :
                 <View style={{ gap: 20 }}>
                     <Text variant="titleLarge">{completed ? ("Level Completed in " + getTime(new Date(finalTime.valueOf() - timeBegin.valueOf()))) : ("Level not completed")}</Text>
@@ -339,7 +335,6 @@ export default function Connect({ navigation }: StackScreenProps<any>) {
                         onPress={() => {
                             setPlaying(false);
                             setIsFinished(false);
-                            disconnectDevice();
                             navigation.navigate('levels');
                         }}
                         disabled={false}
