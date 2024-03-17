@@ -28,7 +28,7 @@ export default function Levels({ navigation }: StackScreenProps<any>) {
     {
       id: 2,
       title: "Level 2",
-      image: require("../../../assets/level2.png"),
+      image: require("../../../assets/level2.jpeg"),
     },
     // {
     //   id: 3,
