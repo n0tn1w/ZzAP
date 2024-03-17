@@ -12,9 +12,7 @@ import {
   Icon,
   Text,
 } from "react-native-paper";
-import StopwatchTimer, {
-  StopwatchTimerMethods,
-} from "react-native-animated-stopwatch-timer";
+import { Stopwatch, Timer } from "react-native-stopwatch-timer";
 import useAxios from "../../utils/useAxios";
 
 export const BLTManager = new BleManager();
@@ -50,21 +48,7 @@ export default function Connect({ navigation }: StackScreenProps<any>) {
 
   const [timeBegin, setTimeBegin] = useState<Number>(Date.now());
   const [finalTime, setFinalTime] = useState<Number>(Date.now());
-
-  const stopwatchTimerRef = useRef<StopwatchTimerMethods>(null);
-
-  // Methods to control the stopwatch
-  function play() {
-    stopwatchTimerRef.current?.play();
-  }
-
-  function pause() {
-    stopwatchTimerRef.current?.pause();
-  }
-
-  function reset() {
-    stopwatchTimerRef.current?.reset();
-  }
+  const [result, setResult] = useState<Number>(0);
 
   const level1: Level = {
     title: "Level 1",
@@ -176,6 +160,7 @@ export default function Connect({ navigation }: StackScreenProps<any>) {
   }
 
   async function disconnectDevice() {
+    sendMessageValue("disconnect");
     console.log("Disconnecting start");
     BLTManager.stopDeviceScan();
 
@@ -222,9 +207,7 @@ export default function Connect({ navigation }: StackScreenProps<any>) {
   }
 
   function getTime(date: Date) {
-    return (
-      date.getMinutes() + ":" + date.getSeconds() + ":" + date.getMilliseconds()
-    );
+    return `${date.getMinutes() < 10 ? "0" : ""}${date.getMinutes()}:${date.getSeconds() < 10 ? "0" : ""}${date.getSeconds()}.${date.getMilliseconds() < 100 ? "0" : ""}${date.getMilliseconds() < 10 ? "0" : ""}${date.getMilliseconds()}`;
   }
 
   //Connect the device and start monitoring characteristics
@@ -260,10 +243,17 @@ export default function Connect({ navigation }: StackScreenProps<any>) {
                 "Message update received: ",
                 base64.decode(characteristic?.value)
               );
-              if (message == '{"command":"end"}') {
+              if (
+                message.trim() == "end" ||
+                base64.decode(characteristic?.value).trim() == "end" ||
+                message.trim() === "end" ||
+                base64.decode(characteristic?.value).trim() === "end"
+              ) {
                 setIsFinished(true);
                 setCompleted(true);
+                console.log("Level completed");
                 setFinalTime(Date.now());
+                disconnectDevice();
               }
             }
           },
@@ -271,12 +261,9 @@ export default function Connect({ navigation }: StackScreenProps<any>) {
         );
 
         console.log("Connection established");
-        setTimeout(() => {
-          sendMessageValue("hamilton");
-        }, 350);
-        setTimeout(() => {
-          sendObjectValue(JSON.stringify(level1.data));
-        }, 350);
+
+        sendMessageValue("hamilton");
+        sendObjectValue(JSON.stringify(level1.data));
         //sendMessageValue("{command:\"hamilton\"}");
         //sendMessageValue("{\"inz\":5}");
 
@@ -348,6 +335,8 @@ export default function Connect({ navigation }: StackScreenProps<any>) {
           onPress={() => {
             setPlaying(true);
             setTimeBegin(Date.now());
+            sendMessageValue("hamilton");
+            sendObjectValue(JSON.stringify(level1.data));
           }}
           disabled={false}
         >
@@ -374,7 +363,6 @@ export default function Connect({ navigation }: StackScreenProps<any>) {
         console.log(error);
       }
     };
-
     return (
       <View
         style={{
@@ -391,7 +379,21 @@ export default function Connect({ navigation }: StackScreenProps<any>) {
         <Text variant="bodyLarge">{level1.description}</Text>
         <Icon source={level1.icon} size={200} color={colors.primary}></Icon>
         {!isFinished ? (
-          <View style={{ gap: 20 }}>
+          <View style={{ gap: 20, alignItems: "center" }}>
+            <Stopwatch
+              laps
+              msecs
+              start={true}
+              reset={false}
+              options={{
+                container: {
+                  backgroundColor: colors.primaryContainer,
+                  borderRadius: 10,
+                  padding: 10,
+                },
+                text: { fontSize: 30, color: colors.onPrimary },
+              }}
+            />
             <Button
               mode="contained"
               onPress={() => {
@@ -416,7 +418,6 @@ export default function Connect({ navigation }: StackScreenProps<any>) {
               onPress={() => {
                 setPlaying(false);
                 setIsFinished(false);
-                disconnectDevice();
                 navigation.navigate("levels");
               }}
               disabled={false}
