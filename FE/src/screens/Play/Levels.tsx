@@ -30,11 +30,11 @@ export default function Levels({ navigation }: StackScreenProps<any>) {
       title: "Level 2",
       image: require("../../../assets/level2.png"),
     },
-    {
-      id: 3,
-      title: "Level 2",
-      image: require("../../../assets/level2.png"),
-    },
+    // {
+    //   id: 3,
+    //   title: "Level 2",
+    //   image: require("../../../assets/level2.png"),
+    // },
   ]);
 
   const hideModal = () => setVisible(false);
