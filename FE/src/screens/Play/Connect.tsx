@@ -69,7 +69,7 @@ export default function Connect({ navigation }: StackScreenProps<any>) {
   const level1: Level = {
     title: "Level 1",
     description:
-      "This level is nice level, very nice, very math. Gg go next. Easy win for jidjkadjiq. dominos. i must scream and i have no mouth",
+      "The objective of the level is to find the safest path, where the numbers are the danger levels of the roads.",
     icon: "graphql",
     data: {
       activeNodes: [4, 19, 13, 12, 25],
