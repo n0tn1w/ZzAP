@@ -2,6 +2,9 @@
 #include <BLEDevice.h>
 #include <BLEServer.h>
 #include <BLEUtils.h>
+#include <freertos/FreeRTOS.h>
+#include <vector>
+
 #include <ArduinoJson.h>
 
 // BLE SECTION
@@ -37,28 +40,25 @@ namespace Pins {
   
   const int R_21 = 21;
   const int R_22 = 22;
+  const int R_35 = 35;
+
+  const int R_27 = 27;
   const int R_23 = 23;
 };
 
 void InitRightSidePins() {
   Serial.println("Init!");
-  //pinMode(Pins::R_15, INPUT); // Set the diode pin as an output
   pinMode(Pins::START_2, OUTPUT); // Set the diode pin as an output
   pinMode(Pins::R_19, INPUT); // Set the diode pin as an output
   pinMode(Pins::R_25, INPUT);
   pinMode(Pins::R_13, INPUT);
   pinMode(Pins::R_12, INPUT);
 
-  
-//  pinMode(Pins::R_0, INPUT); // Set the diode pin as an output
-//  pinMode(Pins::R_4, INPUT); // Set the diode pin as an output
-  //pinMode(Pins::R_16, INPUT); // Set the diode pin as an output
-//  pinMode(Pins::R_17, INPUT); // Set the diode pin as an output
-//  pinMode(Pins::R_5, INPUT); // Set the diode pin as an output
-//  pinMode(Pins::R_18, INPUT); // Set the diode pin as an output
-//  pinMode(Pins::R_21, INPUT); // Set the diode pin as an output
-  //pinMode(Pins::R_22, INPUT); // Set the diode pin as an output
-  //pinMode(Pins::R_23, INPUT); // Set the diode pin as an output
+  pinMode(Pins::R_22, INPUT); // Set the diode pin as an output
+  pinMode(Pins::R_27, INPUT);
+  pinMode(Pins::R_18, INPUT);
+  pinMode(Pins::R_23, INPUT);
+  pinMode(Pins::R_35, INPUT);
 }
 
 namespace Const {
@@ -84,10 +84,22 @@ void Disconnect() {
     pAdvertising->stop(); // Stop advertising
 }
 
+template<typename T>
+bool contains(const std::vector<T>& vec, const T& element) {
+    for (const auto& item : vec) {
+        if (item == element) {
+            return true;
+        }
+    }
+    return false;
+}
+
 namespace HamiltonGame {
   struct ActiveGraph {
     std::vector<int> activeNodes;
+    std::vector<int> onNodes;
     std::vector<std::pair<int, int>> edges;
+    size_t oldSize;
   };
   
   ActiveGraph activeGraph;
@@ -108,14 +120,14 @@ namespace HamiltonGame {
         int node1 = value.as<int>();
         activeGraph.activeNodes.push_back(node1);
     }
-//    JsonArray dataEdgesArray = doc["edges"];
-//    Serial.println(dataEdgesArray);
-//    for (JsonVariant value : dataEdgesArray) {
-//        int node1 = value[0].as<int>();
-//        int node2 = value[1].as<int>();
-//
-//        activeGraph.edges.push_back({node1, node2});
-//    }
+    JsonArray dataEdgesArray = doc["edges"];
+    Serial.println(dataEdgesArray);
+    for (JsonVariant value : dataEdgesArray) {
+        int node1 = value[0].as<int>();
+        int node2 = value[1].as<int>();
+
+        activeGraph.edges.push_back({node1, node2});
+    }
   }
 
   void CallStartFE() {
@@ -123,6 +135,7 @@ namespace HamiltonGame {
     message_characteristic->setValue("{command: \"hamilton\"}");
     message_characteristic->notify();  
     digitalWrite(Pins::START_2, HIGH);
+    activeGraph.oldSize = 1;
   }
 
   
@@ -131,9 +144,11 @@ namespace HamiltonGame {
     digitalWrite(Pins::START_2, HIGH);
     delay(3000);
     digitalWrite(Pins::START_2, LOW);
+    delay(1000);
     digitalWrite(Pins::START_2, HIGH);
     delay(3000);
     digitalWrite(Pins::START_2, LOW);
+    delay(1000);
     digitalWrite(Pins::START_2, HIGH);
     delay(3000);
     digitalWrite(Pins::START_2, LOW);
@@ -145,40 +160,93 @@ namespace HamiltonGame {
     message_characteristic->notify();
     PostGameLighting();  
     Disconnect();
-
+    activeGraph.oldSize = 0;
   }
+
+//  int UpdateOnNodes() {
+//    int len = 0;
+//    for(int i =0; i < activeGraph.activeNodes.size(); i++) {
+//      int statuss = digitalRead(activeGraph.activeNodes[i]);
+//      if(statuss == 1) {
+//        len++;  
+//      }
+//    }
+//
+//    return len;
+//  }
+
+//  void SendDataForActive() {
+//    activeGraph.oldSize = UpdateOnNodes();
+//    
+//    std::string builder = "[";
+//      if(activeGraph.onNodes.size() != activeGraph.oldSize) {
+//          activeGraph.oldSize = activeGraph.onNodes.size();
+//          for(int i = 0; i < activeGraph.activeNodes.size(); i++) {
+//              int statuss = digitalRead(activeGraph.activeNodes[i]);
+//              
+//              if(statuss == 1) {
+//                if(contains(activeGraph.onNodes, activeGraph.activeNodes[i])) {
+//                    activeGraph.onNodes.push_back(activeGraph.activeNodes[i]);
+//                    builder += activeGraph.activeNodes[i] + ", ";
+//                }
+//              }
+//          }
+//      }
+//     builder += "]";
+//
+//        message_characteristic->setValue(builder.c_str());
+//    message_characteristic->notify();  
+//
+//  }
   
   void PlayHamilton() {
-     Serial.println("PlayHamilton");
-     bool allDone = false;
-     bool z = true;
-     if(activeGraph.activeNodes.size() == 0) {
-        return; 
-     }
-     Serial.print("ask: ");
-     Serial.print(activeGraph.activeNodes.size());
-     for(int el : activeGraph.activeNodes) {
-        if(z) {
-          allDone= true;
-          z=false;
-        }
-        int state = digitalRead(el);       
-        if(state != 1) {
-            allDone = false;
+           Serial.print("Game over you win!");
+       int s1 = digitalRead(16); 
+      int s2 = digitalRead(25);
+        int s3 = digitalRead(35);
+             int s4 = digitalRead(27);
+                  int s5 = digitalRead(12);
+                  if(s1 == 1 && s2 == 2 && s3 == 1 && s4 == 1 && s5 == 1) {
+                             Serial.print("Game over you win!");
+  
+        Global::command = Const::idle;
+        CallEndGame();
+                    
+                    }
+//     Serial.println("PlayHamilton");
+//     bool allDone = true;
+//     //bool z = true;
+//     if(activeGraph.activeNodes.size() == 0) {
+//        return; 
+//     }
+//     //SendDataForActive();
+//     Serial.print("ask: ");
+//     Serial.print(activeGraph.activeNodes.size());
+//     if(activeGraph.activeNodes.size() == 5 ){
+//       for(int el : activeGraph.activeNodes) {
+//          int state = digitalRead(el);   
+//
 //              Serial.print(el);
-//              Serial.print(" EXIT: ");
-//              Serial.print(state);
-//              Serial.println(" ");
-            return;
-        }
-     }
-     
-     if( allDone ) {
-      Serial.print("Game over you win!");
-
-      Global::command = Const::idle;
-      CallEndGame();
-     }
+//                Serial.print(" adata: ");
+//                Serial.print(state);
+//                Serial.println(" ");
+//          if(state == 0) {
+//              allDone = false;
+//                Serial.print(el);
+//                Serial.print(" EXIT: ");
+//                Serial.print(state);
+//                Serial.println(" ");
+//              return;
+//          }
+//       }
+//       
+//       if( allDone ) {
+//        Serial.print("Game over you win!");
+//  
+//        Global::command = Const::idle;
+//        CallEndGame();
+//       }
+//     }
   }
 }
 
