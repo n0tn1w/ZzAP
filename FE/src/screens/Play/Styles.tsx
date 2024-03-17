@@ -22,7 +22,7 @@ export const styles = (colors: MD3Colors) =>
       borderRadius: 10,
       backgroundColor: colors.elevation.level3,
     },
-    levelImage: { width: 100, height: 100 },
+    levelImage: { width: 110, height: 110 },
     buttonsView: {
       flexDirection: "column",
       justifyContent: "center",
