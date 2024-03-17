@@ -22,17 +22,43 @@ String boxValue = "0";
 
 namespace Pins {
   const int R_15 = 15; // Not stable
-  const int START_2 = 2;
+  const int START_2 = 16;
+  const int R_19 = 19;
+  const int R_25 = 25;
+  const int R_13 = 13;
+  const int R_12 = 12;
+  
   const int R_0 = 0; // Not stable
   const int R_4 = 4;
-  const int R_16 = 16;
+  //const int R_16 = 16;
   const int R_17 = 17;
   const int R_5 = 5;
   const int R_18 = 18;
-  const int R_19 = 19;
+  
   const int R_21 = 21;
   const int R_22 = 22;
   const int R_23 = 23;
+};
+
+void InitRightSidePins() {
+  Serial.println("Init!");
+  //pinMode(Pins::R_15, INPUT); // Set the diode pin as an output
+  pinMode(Pins::START_2, OUTPUT); // Set the diode pin as an output
+  pinMode(Pins::R_19, INPUT); // Set the diode pin as an output
+  pinMode(Pins::R_25, INPUT);
+  pinMode(Pins::R_13, INPUT);
+  pinMode(Pins::R_12, INPUT);
+
+  
+//  pinMode(Pins::R_0, INPUT); // Set the diode pin as an output
+//  pinMode(Pins::R_4, INPUT); // Set the diode pin as an output
+  //pinMode(Pins::R_16, INPUT); // Set the diode pin as an output
+//  pinMode(Pins::R_17, INPUT); // Set the diode pin as an output
+//  pinMode(Pins::R_5, INPUT); // Set the diode pin as an output
+//  pinMode(Pins::R_18, INPUT); // Set the diode pin as an output
+//  pinMode(Pins::R_21, INPUT); // Set the diode pin as an output
+  //pinMode(Pins::R_22, INPUT); // Set the diode pin as an output
+  //pinMode(Pins::R_23, INPUT); // Set the diode pin as an output
 }
 
 namespace Const {
@@ -53,9 +79,15 @@ namespace Global {
    Graph graph;
 }
 
+void Disconnect() {
+      BLEAdvertising* pAdvertising = pServer->getAdvertising();
+    pAdvertising->stop(); // Stop advertising
+}
+
 namespace HamiltonGame {
   struct ActiveGraph {
     std::vector<int> activeNodes;
+    std::vector<std::pair<int, int>> edges;
   };
   
   ActiveGraph activeGraph;
@@ -70,15 +102,20 @@ namespace HamiltonGame {
         Serial.println(error.c_str());
         return;
     }
-    int a = doc["inz"];
-    Serial.println("Seri");
-    Serial.println(a);
     JsonArray dataNodeResultArray = doc["activeNodes"];
     Serial.println(dataNodeResultArray);
     for (JsonVariant value : dataNodeResultArray) {
         int node1 = value.as<int>();
         activeGraph.activeNodes.push_back(node1);
     }
+//    JsonArray dataEdgesArray = doc["edges"];
+//    Serial.println(dataEdgesArray);
+//    for (JsonVariant value : dataEdgesArray) {
+//        int node1 = value[0].as<int>();
+//        int node2 = value[1].as<int>();
+//
+//        activeGraph.edges.push_back({node1, node2});
+//    }
   }
 
   void CallStartFE() {
@@ -88,28 +125,55 @@ namespace HamiltonGame {
     digitalWrite(Pins::START_2, HIGH);
   }
 
+  
+  void PostGameLighting() {
+    
+    digitalWrite(Pins::START_2, HIGH);
+    delay(3000);
+    digitalWrite(Pins::START_2, LOW);
+    digitalWrite(Pins::START_2, HIGH);
+    delay(3000);
+    digitalWrite(Pins::START_2, LOW);
+    digitalWrite(Pins::START_2, HIGH);
+    delay(3000);
+    digitalWrite(Pins::START_2, LOW);
+  }
+
   void CallEndGame() {
     Serial.println("CallEndGame");
-    message_characteristic->setValue("{command: \"end\"}");
-    message_characteristic->notify();  
-    digitalWrite(Pins::START_2, LOW);
+    message_characteristic->setValue("end");
+    message_characteristic->notify();
+    PostGameLighting();  
+    Disconnect();
+
   }
   
   void PlayHamilton() {
      Serial.println("PlayHamilton");
-     bool allDone = true;
+     bool allDone = false;
+     bool z = true;
+     if(activeGraph.activeNodes.size() == 0) {
+        return; 
+     }
+     Serial.print("ask: ");
+     Serial.print(activeGraph.activeNodes.size());
      for(int el : activeGraph.activeNodes) {
-        int state = digitalRead(el);
-        Serial.println(el);
-        Serial.print("  ");
-        Serial.print(state);
-
-        if(state == 0) {
+        if(z) {
+          allDone= true;
+          z=false;
+        }
+        int state = digitalRead(el);       
+        if(state != 1) {
             allDone = false;
-            break;
+//              Serial.print(el);
+//              Serial.print(" EXIT: ");
+//              Serial.print(state);
+//              Serial.println(" ");
+            return;
         }
      }
-     if(allDone) {
+     
+     if( allDone ) {
       Serial.print("Game over you win!");
 
       Global::command = Const::idle;
@@ -127,6 +191,7 @@ class MyServerCallbacks : public BLEServerCallbacks
 
   void onDisconnect(BLEServer *pServer)
   {
+    Global::command = Const::idle;
     Serial.println("Disconnected");
   }
 };
@@ -156,30 +221,20 @@ class CharacteristicsCallbacks : public BLECharacteristicCallbacks
         
       } else if(Global::command == Const::game2) {
         
-      } 
+      } else if(valueWritten == "disconnect") {
+        Serial.print("Disconnect!!!!!!!!");
+        Disconnect();
+      }
     }
   }
 };
 
-void InitRightSidePins() {
-  pinMode(Pins::R_15, INPUT); // Set the diode pin as an output
-  pinMode(Pins::START_2, OUTPUT); // Set the diode pin as an output
-  pinMode(Pins::R_0, INPUT); // Set the diode pin as an output
-  pinMode(Pins::R_4, INPUT); // Set the diode pin as an output
-  pinMode(Pins::R_16, INPUT); // Set the diode pin as an output
-  pinMode(Pins::R_17, INPUT); // Set the diode pin as an output
-  pinMode(Pins::R_5, INPUT); // Set the diode pin as an output
-  pinMode(Pins::R_18, INPUT); // Set the diode pin as an output
-  pinMode(Pins::R_19, INPUT); // Set the diode pin as an output
-  pinMode(Pins::R_21, INPUT); // Set the diode pin as an output
-  //pinMode(Pins::R_22, INPUT); // Set the diode pin as an output
-  //pinMode(Pins::R_23, INPUT); // Set the diode pin as an output
-}
-
 void setup()
 {
   Serial.begin(115200);
-
+    pinMode(Pins::START_2, OUTPUT);
+  //digitalWrite(16, HIGH);
+  
   //Init Pins
   InitRightSidePins();
 
@@ -233,6 +288,7 @@ void setup()
 
 void loop()
 {
+
   if(Global::command == Const::idle) {
     delay(1000);  
   } else if(Global::command == Const::hamilton) {

@@ -52,7 +52,11 @@ export default function Leaderboard() {
       >
         <Text style={styleSheet.rankNumber}>{index + 4}</Text>
         <Avatar.Image size={40} source={getImage()} style={styleSheet.avatar} />
-        <Text style={styleSheet.name}>{item.username}</Text>
+        <View style={styleSheet.rankAndNameView}>
+          <Text style={styleSheet.name}>{item.username}</Text>
+          <Text style={styleSheet.division}>{item.division}</Text>
+        </View>
+        {/* <Text style={styleSheet.name}>{item.username}</Text> */}
         <Text>{item.score}</Text>
       </View>
     );

@@ -1,35 +1,41 @@
-import { StackScreenProps } from '@react-navigation/stack';
-import React, { Component, useEffect, useRef } from 'react'
-import { useState } from 'react'
-import { Alert, Platform, View } from 'react-native'
-import { PermissionsAndroid } from 'react-native'
-import base64 from 'react-native-base64';
-import { BleManager, Device, State } from 'react-native-ble-plx';
-import { useTheme, Button, ActivityIndicator, Icon, Text } from 'react-native-paper';
+import { StackScreenProps } from "@react-navigation/stack";
+import React, { Component, useEffect, useRef } from "react";
+import { useState } from "react";
+import { Alert, Platform, View } from "react-native";
+import { PermissionsAndroid } from "react-native";
+import base64 from "react-native-base64";
+import { BleManager, Device, State } from "react-native-ble-plx";
+import {
+    useTheme,
+    Button,
+    ActivityIndicator,
+    Icon,
+    Text,
+} from "react-native-paper";
 import { Stopwatch, Timer } from 'react-native-stopwatch-timer';
+import useAxios from "../../utils/useAxios";
 
-export const BLTManager = new BleManager()
+export const BLTManager = new BleManager();
 
-const SERVICE_UUID: string = '4fafc201-1fb5-459e-8fcc-c5c9c331914b';
+const SERVICE_UUID: string = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
 
-const MESSAGE_UUID: string = '6d68efe5-04b6-4a85-abc4-c2670b7bf7fd';
-const OBJECT_UUID: string = 'f27b53ad-c63d-49a0-8c0f-9f297e6cc520';
+const MESSAGE_UUID: string = "6d68efe5-04b6-4a85-abc4-c2670b7bf7fd";
+const OBJECT_UUID: string = "f27b53ad-c63d-49a0-8c0f-9f297e6cc520";
 
 export type LevelData = {
     activeNodes: number[];
     edges: [number, number][];
-}
+};
 
 export type Level = {
     title: string;
     description: string;
     icon: string;
     data: LevelData;
-}
+};
 
 export default function Connect({ navigation }: StackScreenProps<any>) {
     const { colors } = useTheme();
-
 
     const [isConnected, setIsConnected] = useState<boolean>(false);
     const [playing, setPlaying] = useState<boolean>(false);
@@ -38,7 +44,7 @@ export default function Connect({ navigation }: StackScreenProps<any>) {
     const [isFinished, setIsFinished] = useState<boolean>(false);
 
     const [connectedDevice, setConnectedDevice] = useState<Device>();
-    const [message, setMessage] = useState<String>('Nothing Yet');
+    const [message, setMessage] = useState<String>("Nothing Yet");
 
     const [timeBegin, setTimeBegin] = useState<Number>(Date.now());
     const [finalTime, setFinalTime] = useState<Number>(Date.now());
@@ -53,54 +59,77 @@ export default function Connect({ navigation }: StackScreenProps<any>) {
 
     };
 
-    const subscription = BLTManager.onStateChange((state) => {  // check if device bluetooth is powered on, if not alert to enable it!
-        if (state === 'PoweredOff') {
-            Alert.alert('"App" would like to use Bluetooth.', 'This app uses Bluetooth to connect to and share information with your .....', [
-                {
-                    text: "Don't allow",
-                    onPress: () => { console.log('Cancel Pressed'); },
-                    style: 'cancel',
-                },
-                { text: "Turn ON", onPress: () => { BLTManager.enable() } },
-            ]);
+    const subscription = BLTManager.onStateChange((state) => {
+        // check if device bluetooth is powered on, if not alert to enable it!
+        if (state === "PoweredOff") {
+            Alert.alert(
+                '"App" would like to use Bluetooth.',
+                "This app uses Bluetooth to connect to and share information with your .....",
+                [
+                    {
+                        text: "Don't allow",
+                        onPress: () => {
+                            console.log("Cancel Pressed");
+                        },
+                        style: "cancel",
+                    },
+                    {
+                        text: "Turn ON",
+                        onPress: () => {
+                            BLTManager.enable();
+                        },
+                    },
+                ]
+            );
 
             subscription.remove();
         }
     }, true);
 
     const requestBluetoothPermission = async () => {
-        if (Platform.OS === 'ios') {
-            return true
+        if (Platform.OS === "ios") {
+            return true;
         }
-        if (Platform.OS === 'android' && PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION) {
-            const apiLevel = parseInt(Platform.Version.toString(), 10)
+        if (
+            Platform.OS === "android" &&
+            PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+        ) {
+            const apiLevel = parseInt(Platform.Version.toString(), 10);
 
             if (apiLevel < 31) {
-                const granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION)
-                return granted === PermissionsAndroid.RESULTS.GRANTED
+                const granted = await PermissionsAndroid.request(
+                    PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+                );
+                return granted === PermissionsAndroid.RESULTS.GRANTED;
             }
-            if (PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN && PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT) {
+            if (
+                PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN &&
+                PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT
+            ) {
                 const result = await PermissionsAndroid.requestMultiple([
                     PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
                     PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
-                    PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-                ])
+                    PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+                ]);
 
                 return (
-                    result['android.permission.BLUETOOTH_CONNECT'] === PermissionsAndroid.RESULTS.GRANTED &&
-                    result['android.permission.BLUETOOTH_SCAN'] === PermissionsAndroid.RESULTS.GRANTED &&
-                    result['android.permission.ACCESS_FINE_LOCATION'] === PermissionsAndroid.RESULTS.GRANTED &&
+                    result["android.permission.BLUETOOTH_CONNECT"] ===
+                    PermissionsAndroid.RESULTS.GRANTED &&
+                    result["android.permission.BLUETOOTH_SCAN"] ===
+                    PermissionsAndroid.RESULTS.GRANTED &&
+                    result["android.permission.ACCESS_FINE_LOCATION"] ===
+                    PermissionsAndroid.RESULTS.GRANTED &&
                     (await BLTManager.state()) == State.PoweredOn
-                )
+                );
             }
         }
-        return false
-    }
+        return false;
+    };
 
     async function scanDevices() {
-        requestBluetoothPermission().then(answer => {
+        requestBluetoothPermission().then((answer) => {
             if (answer == true) {
-                console.log('scanning');
+                console.log("scanning");
                 setConnecting(true);
                 BLTManager.startDeviceScan(null, null, (error, scannedDevice) => {
                     if (error) {
@@ -108,7 +137,7 @@ export default function Connect({ navigation }: StackScreenProps<any>) {
                     }
                     if (scannedDevice != null) {
                         console.log(scannedDevice.name);
-                        if (scannedDevice.name == 'ESP32') {
+                        if (scannedDevice.name == "ESP32") {
                             BLTManager.stopDeviceScan();
                             connectDevice(scannedDevice);
                         }
@@ -118,31 +147,29 @@ export default function Connect({ navigation }: StackScreenProps<any>) {
                     BLTManager.stopDeviceScan();
                 }, 5000);
             } else {
-                Alert.alert('Permissions not granted, try again');
+                Alert.alert("Permissions not granted, try again");
             }
         });
     }
 
     async function disconnectDevice() {
         sendMessageValue("disconnect");
-        console.log('Disconnecting start');
+        console.log("Disconnecting start");
         BLTManager.stopDeviceScan();
 
         if (connectedDevice != null) {
             while ((await connectedDevice.isConnected()) == true) {
                 const isDeviceConnected = await connectedDevice.isConnected();
                 if (isDeviceConnected) {
-                    BLTManager.cancelTransaction('messagetransaction');
-                    BLTManager.cancelTransaction('nightmodetransaction');
+                    BLTManager.cancelTransaction("messagetransaction");
+                    BLTManager.cancelTransaction("nightmodetransaction");
                     BLTManager.cancelDeviceConnection(connectedDevice.id);
                 }
             }
-            console.log('DC completed');
+            console.log("DC completed");
         }
-
         setIsConnected(false);
         setConnecting(false);
-
     }
 
     //Function to send object data to ESP32
@@ -151,9 +178,12 @@ export default function Connect({ navigation }: StackScreenProps<any>) {
             connectedDevice?.id ?? "",
             SERVICE_UUID,
             OBJECT_UUID,
-            base64.encode(value),
-        ).then(characteristic => {
-            console.log('Wrote object data:', base64.decode(characteristic.value ?? ""));
+            base64.encode(value)
+        ).then((characteristic) => {
+            console.log(
+                "Wrote object data:",
+                base64.decode(characteristic.value ?? "")
+            );
         });
     }
 
@@ -163,9 +193,9 @@ export default function Connect({ navigation }: StackScreenProps<any>) {
             connectedDevice?.id ?? "",
             SERVICE_UUID,
             MESSAGE_UUID,
-            base64.encode(value),
-        ).then(characteristic => {
-            console.log('Wrote message:', base64.decode(characteristic.value ?? ""));
+            base64.encode(value)
+        ).then((characteristic) => {
+            console.log("Wrote message:", base64.decode(characteristic.value ?? ""));
         });
     }
 
@@ -173,30 +203,26 @@ export default function Connect({ navigation }: StackScreenProps<any>) {
         return `${date.getMinutes() < 10 ? '0' : ''}${date.getMinutes()}:${date.getSeconds() < 10 ? '0' : ''}${date.getSeconds()}.${date.getMilliseconds() < 100 ? '0' : ''}${date.getMilliseconds() < 10 ? '0' : ''}${date.getMilliseconds()}`
     }
 
-    function getTimeFromStopwatch(time) {
-
-    }
-
     //Connect the device and start monitoring characteristics
     async function connectDevice(device: Device) {
-        console.log('connecting to Device:', device.name);
+        console.log("connecting to Device:", device.name);
         device
             .connect()
-            .then(device => {
+            .then((device) => {
                 setConnectedDevice(device);
                 setIsConnected(true);
                 return device.discoverAllServicesAndCharacteristics();
             })
-            .then(device => {
+            .then((device) => {
                 BLTManager.onDeviceDisconnected(device.id, (error, device) => {
-                    console.log('Device DC');
+                    console.log("Device DC");
                     setIsConnected(false);
                     setConnecting(false);
                 });
 
                 device
                     .readCharacteristicForService(SERVICE_UUID, MESSAGE_UUID)
-                    .then(valenc => {
+                    .then((valenc) => {
                         setMessage(base64.decode(valenc?.value ?? ""));
                     });
 
@@ -235,44 +261,49 @@ export default function Connect({ navigation }: StackScreenProps<any>) {
     }
 
     const ConnectComponent: React.FC = () => {
-        return (<View>
-            <Button
-                mode="contained"
-                onPress={() => {
-                    scanDevices();
-                }}
-                disabled={false}
-            >
-                Connect
-            </Button></View>)
-    }
+        return (
+            <View>
+                <Button
+                    mode="contained"
+                    onPress={() => {
+                        scanDevices();
+                    }}
+                    disabled={false}
+                >
+                    Connect
+                </Button>
+            </View>
+        );
+    };
 
     const ConnectingComponent: React.FC = () => {
-        return (<View style={{ gap: 5 }}>
-            <ActivityIndicator animating={true} />
-            <Button
-                mode="contained"
-                onPress={() => {
-                    scanDevices();
-                }}
-                disabled={false}
-            >
-                Reset scan
-            </Button>
-            <Button
-                mode="contained"
-                onPress={() => {
-                    setIsConnected(true);
-                    setConnecting(false);
-                    BLTManager.stopDeviceScan();
-                    console.log("faked connect");
-                }}
-                disabled={false}
-            >
-                Fake connect
-            </Button>
-        </View>)
-    }
+        return (
+            <View style={{ gap: 5 }}>
+                <ActivityIndicator animating={true} />
+                <Button
+                    mode="contained"
+                    onPress={() => {
+                        scanDevices();
+                    }}
+                    disabled={false}
+                >
+                    Reset scan
+                </Button>
+                {/* <Button
+          mode="contained"
+          onPress={() => {
+            setIsConnected(true);
+            setConnecting(false);
+            BLTManager.stopDeviceScan();
+            console.log("faked connect");
+          }}
+          disabled={false}
+        >
+          Fake connect
+        </Button> */}
+            </View>
+        );
+    };
 
     const ConnectedComponent: React.FC = () => {
         return (<View style={{ gap: 150 }}>
@@ -352,21 +383,28 @@ export default function Connect({ navigation }: StackScreenProps<any>) {
                 alignItems: "center",
                 justifyContent: "center",
                 backgroundColor: colors.background,
-            }}>
-
-            {!playing ?
-                (!isConnected ? (
-                    connecting ? <ConnectingComponent /> : <ConnectComponent />
-                ) : <ConnectedComponent />)
-                : <PlayingComponent />
-            }
-            <Text style={{ color: colors.onBackground }}>{message}</Text>
-        </View >
-    )
+            }}
+        >
+            {!playing ? (
+                !isConnected ? (
+                    connecting ? (
+                        <ConnectingComponent />
+                    ) : (
+                        <ConnectComponent />
+                    )
+                ) : (
+                    <ConnectedComponent />
+                )
+            ) : (
+                <PlayingComponent />
+            )}
+            {/* <Text style={{ color: colors.onBackground }}>{message}</Text> */}
+        </View>
+    );
 }
 
 function StringToBool(input: String) {
-    if (input == '1') {
+    if (input == "1") {
         return true;
     } else {
         return false;
@@ -375,8 +413,8 @@ function StringToBool(input: String) {
 
 function BoolToString(input: boolean) {
     if (input == true) {
-        return '1';
+        return "1";
     } else {
-        return '0';
+        return "0";
     }
 }
