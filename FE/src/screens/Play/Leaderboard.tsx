@@ -1,12 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { FlatList, View } from "react-native";
 import { Text, useTheme } from "react-native-paper";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { styles } from "../Leaderboards/Styles";
 import { useAuth } from "../../contexts/AuthContext";
 import useAxios from "../../utils/useAxios";
-import { StackScreenProps } from "@react-navigation/stack";
-import { PublicStackProps } from "./Play";
 
 type LeaderboardEntity = {
   username: string;

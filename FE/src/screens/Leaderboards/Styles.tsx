@@ -88,4 +88,11 @@ export const styles = (colors: MD3Colors) =>
       fontSize: 30,
       color: "white",
     },
+    rankAndNameView: {
+      flexDirection: "column",
+      flex: 1,
+    },
+    division: {
+      color: colors.inversePrimary,
+    },
   });
