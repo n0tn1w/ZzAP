@@ -18,8 +18,10 @@ export default function Login() {
   const axios = useAxios();
   const { colors } = useTheme();
   const { login } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async () => {
+    setIsLoading(true);
     try {
       const res = await axios.post<LoginResponse>("/login", {
         username,
@@ -30,6 +32,8 @@ export default function Login() {
     } catch (error) {
       // TODO
       console.log(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -82,8 +86,7 @@ export default function Login() {
           labelStyle={{ fontSize: 18 }}
           contentStyle={{ height: "100%" }}
           onPress={handleLogin}
-          // loading={loading}
-          // onPress={handleLogin}
+          loading={isLoading}
         >
           Login
         </Button>

@@ -31,11 +31,6 @@ export default function AuthNavigationStack() {
   return (
     <Tabs.Navigator
       id="TabsID"
-      // screenOptions={{
-      //   header: ({ route, navigation }) => (
-      //     <TabsHeader title={route.name} navigation={navigation} />
-      //   ),
-      // }}
       tabBar={({ navigation, state, descriptors, insets }) => (
         <BottomNavigation.Bar
           navigationState={state}
@@ -96,6 +91,7 @@ export default function AuthNavigationStack() {
           tabBarIcon: ({ color }) => (
             <LeaderboardIcon name="leaderboard" color={color} size={23} />
           ),
+          unmountOnBlur: true,
           ...generalOptions,
         }}
       />
@@ -110,6 +106,7 @@ export default function AuthNavigationStack() {
           tabBarIcon: ({ color }) => (
             <IconFeather name="user" color={color} size={23} />
           ),
+          unmountOnBlur: true,
           ...generalOptions,
         }}
       />

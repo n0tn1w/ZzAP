@@ -5,8 +5,9 @@ import { FlatList, View } from "react-native";
 import { styles } from "./Styles";
 import { Image } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import React from "react";
+import React, { useState } from "react";
 import TrophyIcon from "react-native-vector-icons/MaterialCommunityIcons";
+import Leaderboard from "./Leaderboard";
 
 interface Level {
   id: number;
@@ -16,7 +17,8 @@ interface Level {
 export default function Levels({ navigation }: StackScreenProps<any>) {
   const { colors } = useTheme();
   const styleSheet = styles(colors);
-
+  const [visible, setVisible] = useState(false);
+  const [leaderBoardId, setLeaderBoardId] = useState(0);
   const [levels] = React.useState([
     {
       id: 1,
@@ -33,27 +35,9 @@ export default function Levels({ navigation }: StackScreenProps<any>) {
       title: "Level 2",
       image: require("../../../assets/level2.png"),
     },
-    {
-      id: 4,
-      title: "Level 2",
-      image: require("../../../assets/level2.png"),
-    },
-    {
-      id: 5,
-      title: "Level 2",
-      image: require("../../../assets/level2.png"),
-    },
-    {
-      id: 6,
-      title: "Level 2",
-      image: require("../../../assets/level2.png"),
-    },
-    {
-      id: 7,
-      title: "Level 2",
-      image: require("../../../assets/level2.png"),
-    },
   ]);
+
+  const hideModal = () => setVisible(false);
 
   const Level = ({ id, title }: Level) => {
     return (
@@ -81,7 +65,10 @@ export default function Levels({ navigation }: StackScreenProps<any>) {
           <View style={styleSheet.lowerButtonsView}>
             <Button
               mode="outlined"
-              onPress={() => console.log(`Pressed ${id}`)}
+              onPress={() => {
+                setLeaderBoardId(id);
+                setVisible(true);
+              }}
             >
               <TrophyIcon size={20} name="trophy" />
             </Button>
@@ -99,6 +86,20 @@ export default function Levels({ navigation }: StackScreenProps<any>) {
 
   return (
     <View style={styleSheet.mainView}>
+      <Portal>
+        <Modal
+          visible={visible}
+          onDismiss={hideModal}
+          contentContainerStyle={{
+            backgroundColor: colors.primaryContainer,
+            justifyContent: "center",
+            padding: 2,
+            height: "50%",
+          }}
+        >
+          <Leaderboard id={leaderBoardId} />
+        </Modal>
+      </Portal>
       <View style={styleSheet.header}>
         <Text style={styleSheet.title}>Levels</Text>
       </View>
